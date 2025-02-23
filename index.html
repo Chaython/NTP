@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather NTP</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Apps Section -->
+    <div class="apps">
+      <h2>Apps</h2>
+      <div id="apps-list"></div>
+    </div>
+
+    <!-- Favorites Section -->
+    <div class="favorites">
+      <h2>Favorites</h2>
+      <div id="favorites-list"></div>
+      <input type="text" id="favorite-input" placeholder="Add a favorite URL">
+      <button id="add-favorite">Add</button>
+    </div>
+
+    <!-- Weather Section -->
+    <div class="weather">
+      <h2>Current Weather</h2>
+      <div id="weather-info"></div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search" id="search-container">
+      <input type="text" id="search-bar" placeholder="Search the web...">
+      <img id="search-provider" alt="Search Provider">
+    </div>
+
+    <!-- History Section -->
+    <div class="history">
+      <h2>Recent History</h2>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- Footer with Settings -->
+  <footer class="settings-footer">
+    <label for="theme-select">Theme:</label>
+    <select id="theme-select">
+      <option value="auto">Auto</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+    <button id="bg-settings-btn">Background Settings</button>
+  </footer>
+
+  <!-- Background Settings Modal -->
+  <div id="bg-modal" class="modal">
+    <div class="modal-content">
+      <h3>Background Settings</h3>
+      <div class="bg-options">
+        <div class="bg-section">
+          <h4>Upload Image</h4>
+          <div class="dropzone" id="dropzone">
+            Drop image here or click to upload
+            <input type="file" id="bg-image" accept="image/*">
+          </div>
+        </div>
+        <div class="bg-section">
+          <h4>Image URL</h4>
+          <div class="url-input">
+            <input type="text" id="bg-url" placeholder="Paste image URL">
+            <button id="set-bg-url">Preview</button>
+          </div>
+        </div>
+        <div class="bg-section">
+          <h4>Preset Backgrounds</h4>
+          <div class="preset-grid" id="preset-backgrounds"></div>
+        </div>
+      </div>
+      <div class="preview" id="bg-preview"></div>
+      <div class="modal-footer">
+        <button id="remove-bg">Remove Background</button>
+        <button id="apply-bg">Apply</button>
+        <button id="close-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

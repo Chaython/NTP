@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Weather NTP",
+  "version": "1.0",
+  "description": "A custom New Tab Page with weather, search, history, apps, and favorites.",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "geolocation",
+    "history",
+    "storage"
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}
