@@ -10,6 +10,7 @@
   --add-button-bg: #f0f0f0;
   --add-button-border: #ccc;
   --footer-spacing: 10px;
+  --button-radius: 25px;
 }
 
 /* Dark mode class on <html> */
@@ -23,6 +24,24 @@ html.dark {
   --shadow: rgba(0, 0, 0, 0.5);
   --add-button-bg: #161616;
   --add-button-border: #333333;
+}
+
+/* Update square buttons to have no radius */
+html.square-buttons {
+  --button-radius: 0;
+}
+
+/* Add no-box button styles */
+html.nobox-buttons .app-btn,
+html.nobox-buttons .history-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+html.nobox-buttons .app-btn:hover,
+html.nobox-buttons .history-btn:hover {
+  background-color: rgba(127, 127, 127, 0.1);
 }
 
 body {
@@ -108,19 +127,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;  /* Reduced gap between elements */
   width: clamp(120px, calc(12.5% - 15px), 150px);
-  height: clamp(80px, 10vw, 120px);
+  aspect-ratio: 1;
+  height: auto;
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
-  border-radius: 25px; /* Squircle shape */
+  border-radius: var(--button-radius);
   box-shadow: 0 2px 5px var(--shadow);
   text-decoration: none;
   color: var(--text-color);
   font-size: clamp(12px, 1.2vw, 14px);
   flex-direction: column;
-  gap: 10px;
-  transition: transform 0.2s, background-color 0.3s, color 0.3s, border-color 0.3s;
-  padding: 10px;
+  padding: 10px;  /* Reduced padding */
   box-sizing: border-box;
 }
 
@@ -129,8 +148,10 @@ body {
 }
 
 .app-btn img, .history-btn img {
-  width: clamp(24px, 3vw, 32px);
-  height: clamp(24px, 3vw, 32px);
+  width: clamp(24px, 25%, 32px);
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0;  /* Removed margin */
 }
 
 .app-btn span, .history-btn span {
@@ -139,7 +160,7 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
   width: 100%;
-  padding: 0 8px;
+  padding: 0;  /* Removed padding */
   box-sizing: border-box;
   text-align: center;
   line-height: 1.2;

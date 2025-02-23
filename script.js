@@ -656,3 +656,20 @@ function initializeBookmarksCount() {
     loadFavorites();
   });
 }
+
+// Add button style handling
+document.getElementById('button-style').addEventListener('change', (e) => {
+  const style = e.target.value;
+  localStorage.setItem('buttonStyle', style);
+  document.documentElement.classList.remove('square-buttons', 'nobox-buttons');
+  if (style !== 'squircle') {
+    document.documentElement.classList.add(`${style}-buttons`);
+  }
+});
+
+// Update initialization code
+const buttonStyle = localStorage.getItem('buttonStyle') || 'squircle';
+document.getElementById('button-style').value = buttonStyle;
+if (buttonStyle !== 'squircle') {
+  document.documentElement.classList.add(`${buttonStyle}-buttons`);
+}
