@@ -1,5 +1,54 @@
+// Weather cache functions
+function getWeatherCache() {
+  const cache = localStorage.getItem('weatherCache');
+  if (!cache) return null;
+  
+  const { data, timestamp } = JSON.parse(cache);
+  const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+  
+  if (Date.now() - timestamp > thirtyMinutes) {
+    localStorage.removeItem('weatherCache');
+    return null;
+  }
+  
+  return data;
+}
+
+function setWeatherCache(data) {
+  const cache = {
+    data,
+    timestamp: Date.now()
+  };
+  localStorage.setItem('weatherCache', JSON.stringify(cache));
+}
+
 // Weather API
 async function getWeather() {
+  const cachedData = getWeatherCache();
+  const textView = document.getElementById('weather-info');
+  const iconView = document.getElementById('weather-icon-view');
+  const iconImg = document.getElementById('weather-icon');
+  const tempSpan = document.getElementById('weather-temp');
+  
+  function updateWeatherDisplay(data) {
+    // Text view
+    textView.innerHTML = `
+      ${data.name || "Location"}: ${data.main?.temp ?? "N/A"}°C, 
+      ${data.weather?.[0]?.description || "No data"}
+    `;
+    
+    // Icon view
+    if (data.weather?.[0]?.icon) {
+      iconImg.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+      tempSpan.textContent = `${Math.round(data.main?.temp ?? 0)}°C`;
+    }
+  }
+
+  if (cachedData) {
+    updateWeatherDisplay(cachedData);
+    return;
+  }
+
   navigator.geolocation.getCurrentPosition(async (position) => {
     try {
       const { latitude, longitude } = position.coords;
@@ -10,19 +59,17 @@ async function getWeather() {
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       const data = await response.json();
       
-      document.getElementById('weather-info').innerHTML = `
-        ${data.name || "Location"}: ${data.main?.temp ?? "N/A"}°C, 
-        ${data.weather?.[0]?.description || "No data"}
-      `;
+      setWeatherCache(data);
+      updateWeatherDisplay(data);
     } catch (error) {
       console.error('Weather fetch failed:', error);
-      document.getElementById('weather-info').textContent = 
-        "Failed to load weather data.";
+      textView.textContent = "Failed to load weather data.";
+      iconView.classList.add('hidden');
     }
   }, (error) => {
     console.log('Geolocation error:', error);
-    document.getElementById('weather-info').textContent = 
-      "Enable location access to see weather.";
+    textView.textContent = "Enable location access to see weather.";
+    iconView.classList.add('hidden');
   });
 }
 
@@ -119,7 +166,7 @@ document.getElementById('add-favorite').addEventListener('click', () => {
 
 // Browsing History
 function loadHistory() {
-  chrome.history.search({ text: '', maxResults: 10 }, (historyItems) => {
+  chrome.history.search({ text: '', maxResults: 16 }, (historyItems) => {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '';
     historyItems.forEach(item => {
@@ -179,13 +226,6 @@ function initializeTheme() {
 }
 
 // Background Image Management
-const presetBackgrounds = [
-  { url: 'https://source.unsplash.com/random/1920x1080/?nature', name: 'Nature' },
-  { url: 'https://source.unsplash.com/random/1920x1080/?city', name: 'City' },
-  { url: 'https://source.unsplash.com/random/1920x1080/?space', name: 'Space' },
-  { url: 'https://source.unsplash.com/random/1920x1080/?ocean', name: 'Ocean' }
-];
-
 function initializeBackgroundImage() {
   const modal = document.getElementById('bg-modal');
   const preview = document.getElementById('bg-preview');
@@ -204,19 +244,10 @@ function initializeBackgroundImage() {
     currentPreview = url;
   }
 
-  // Initialize presets
-  const presetGrid = document.getElementById('preset-backgrounds');
-  presetBackgrounds.forEach(bg => {
-    const thumb = document.createElement('div');
-    thumb.className = 'preset-thumb';
-    thumb.style.backgroundImage = `url(${bg.url})`;
-    thumb.title = bg.name;
-    thumb.addEventListener('click', () => updatePreview(bg.url));
-    presetGrid.appendChild(thumb);
-  });
-
+  // Remove presetBackgrounds array and initialization code
+  
   // Modal controls
-  document.getElementById('bg-settings-btn').addEventListener('click', () => {
+  document.getElementById('settings-btn').addEventListener('click', () => {
     modal.style.display = 'block';
     if (currentPreview) {
       updatePreview(currentPreview);
@@ -289,6 +320,41 @@ function initializeBackgroundImage() {
   }
 }
 
+// Add weather toggle functionality
+function initializeWeatherToggle() {
+  const displaySelect = document.getElementById('weather-display');
+  const textView = document.getElementById('weather-info');
+  const iconView = document.getElementById('weather-icon-view');
+  const weatherSection = document.querySelector('.weather');
+  
+  let displayMode = localStorage.getItem('weatherDisplayMode') || 'text';
+  displaySelect.value = displayMode;
+  
+  function updateWeatherView() {
+    // Hide entire section if hidden is selected
+    if (displayMode === 'hidden') {
+      weatherSection.style.display = 'none';
+      return;
+    }
+    
+    // Show section if it was hidden
+    weatherSection.style.display = 'block';
+    
+    // Toggle between text and icon view
+    const showIcon = displayMode === 'icon';
+    textView.classList.toggle('hidden', showIcon);
+    iconView.classList.toggle('hidden', !showIcon);
+  }
+  
+  displaySelect.addEventListener('change', () => {
+    displayMode = displaySelect.value;
+    localStorage.setItem('weatherDisplayMode', displayMode);
+    updateWeatherView();
+  });
+  
+  updateWeatherView();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeTheme();
@@ -298,4 +364,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFavorites();
   loadHistory();
   initializeBackgroundImage();
+  initializeWeatherToggle();
 });

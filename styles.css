@@ -14,15 +14,15 @@
 
 /* Dark mode class on <html> */
 html.dark {
-  --background: #1a1a1a;
-  --text-color: #e0e0e0;
-  --button-bg: #2d2d2d;
-  --button-border: #444;
-  --input-bg: #2d2d2d;
-  --input-border: #444;
-  --shadow: rgba(0, 0, 0, 0.3);
-  --add-button-bg: #444;
-  --add-button-border: #555;
+  --background: #000000;
+  --text-color: #ffffff;
+  --button-bg: #161616;
+  --button-border: #333333;
+  --input-bg: #161616;
+  --input-border: #333333;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --add-button-bg: #161616;
+  --add-button-border: #333333;
 }
 
 body {
@@ -46,6 +46,47 @@ body {
 
 .apps, .favorites, .weather, .search, .history {
   margin: 20px 0;
+}
+
+.weather {
+  position: relative;
+  transition: all 0.3s ease;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+#weather-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  vertical-align: middle;
+  color: var(--text-color);
+}
+
+.weather-icon-container {
+  position: relative;
+  display: inline-block;
+}
+
+.weather-icon-container img {
+  width: 100px;
+  height: 100px;
+}
+
+.weather-icon-container span {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.hidden {
+  display: none;
 }
 
 #apps-list, #history-list {
@@ -149,67 +190,44 @@ body {
   font-size: 18px;
 }
 
-/* Footer Styling */
-.settings-footer {
+/* Settings Button */
+.settings-btn {
   position: fixed;
-  bottom: 10px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  padding: 10px;
-  background-color: var(--button-bg);
-  border-top: 1px solid var(--button-border);
-  box-shadow: 0 -2px 5px var(--shadow);
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: none;    /* Remove background */
+  border: none;        /* Remove border */
+  color: var(--text-color);
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 100;
   display: flex;
   align-items: center;
-  gap: var(--footer-spacing);
   justify-content: center;
 }
 
-.settings-footer label {
-  margin-right: 10px;
-  color: var(--text-color);
+.settings-btn:hover {
+  transform: scale(1.1);
+  background: none;    /* Remove hover background */
 }
 
-#theme-select {
-  padding: 5px;
-  border: 1px solid var(--input-border);
-  border-radius: 5px;
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  cursor: pointer;
-}
-
-.bg-label {
-  margin-left: 20px;
-}
-
-#remove-bg {
-  padding: 5px 10px;
-  background-color: var(--button-bg);
-  color: var(--text-color);
+.theme-select {
+  width: 100%;
+  padding: 8px;
   border: 1px solid var(--button-border);
   border-radius: 5px;
+  background: var(--button-bg);
+  color: var(--text-color);
   cursor: pointer;
+  margin-top: 10px;
 }
 
-#bg-url {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--input-border);
-  border-radius: 5px;
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  font-size: 14px;
-}
-
-#set-bg-url {
-  padding: 5px 10px;
-  background-color: var(--button-bg);
-  color: var(--text-color);
-  border: 1px solid var(--button-border);
-  border-radius: 5px;
-  cursor: pointer;
+/* Remove footer-related styles */
+.settings-footer {
+  display: none;
 }
 
 /* Add semi-transparent overlay when background image is present */
@@ -251,6 +269,10 @@ body.has-bg {
   box-shadow: 0 0 20px var(--shadow);
 }
 
+html.dark .modal-content {
+  background: #000000;
+}
+
 .bg-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -265,6 +287,10 @@ body.has-bg {
   border: 1px solid var(--button-border);
 }
 
+html.dark .bg-section {
+  background: #161616;
+}
+
 .dropzone {
   border: 2px dashed var(--button-border);
   padding: 20px;
@@ -273,20 +299,23 @@ body.has-bg {
   margin: 10px 0;
   border-radius: 8px;
   position: relative;
-}
-
-.dropzone input[type="file"] {
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
+  transition: background-color 0.2s, border-color 0.2s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
   width: 100%;
-  height: 100%;
-  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .dropzone:hover {
   background: var(--button-border);
+  border-color: var(--text-color);
+}
+
+.dropzone input[type="file"] {
+  display: none;
 }
 
 .url-input {
@@ -306,30 +335,6 @@ body.has-bg {
   opacity: 0.7;
   text-align: left;
   margin-top: 5px;
-}
-
-.preset-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-}
-
-.preset-thumb {
-  width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: 5px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  background-size: cover;
-  background-position: center;
-}
-
-.preset-thumb:hover {
-  border-color: var(--button-border);
-}
-
-.preset-thumb.active {
-  border-color: #4CAF50;
 }
 
 .preview {

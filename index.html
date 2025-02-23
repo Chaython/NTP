@@ -25,6 +25,10 @@
     <div class="weather">
       <h2>Current Weather</h2>
       <div id="weather-info"></div>
+      <div id="weather-icon-view" class="weather-icon-container hidden">
+        <img id="weather-icon" alt="Weather">
+        <span id="weather-temp"></span>
+      </div>
     </div>
 
     <!-- Search Bar -->
@@ -40,39 +44,44 @@
     </div>
   </div>
 
-  <!-- Footer with Settings -->
-  <footer class="settings-footer">
-    <label for="theme-select">Theme:</label>
-    <select id="theme-select">
-      <option value="auto">Auto</option>
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-    <button id="bg-settings-btn">Background Settings</button>
-  </footer>
+  <button id="settings-btn" class="settings-btn">⚙️</button>
 
   <!-- Background Settings Modal -->
   <div id="bg-modal" class="modal">
     <div class="modal-content">
-      <h3>Background Settings</h3>
-      <div class="bg-options">
-        <div class="bg-section">
-          <h4>Upload Image</h4>
-          <div class="dropzone" id="dropzone">
-            Drop image here or click to upload
-            <input type="file" id="bg-image" accept="image/*">
+      <h3>Settings</h3>
+      <div class="settings-tabs">
+        <div class="bg-options">
+          <div class="bg-section">
+            <h4>Theme</h4>
+            <select id="theme-select" class="theme-select">
+              <option value="auto">Auto</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
           </div>
-        </div>
-        <div class="bg-section">
-          <h4>Image URL</h4>
-          <div class="url-input">
-            <input type="text" id="bg-url" placeholder="Paste image URL">
-            <button id="set-bg-url">Preview</button>
+          <div class="bg-section">
+            <h4>Weather Display</h4>
+            <select id="weather-display" class="theme-select">
+              <option value="text">Text View</option>
+              <option value="icon">Icon View</option>
+              <option value="hidden">Hidden</option>
+            </select>
           </div>
-        </div>
-        <div class="bg-section">
-          <h4>Preset Backgrounds</h4>
-          <div class="preset-grid" id="preset-backgrounds"></div>
+          <div class="bg-section">
+            <h4>Upload Image</h4>
+            <label class="dropzone" id="dropzone">
+              Drop image here or click to select
+              <input type="file" id="bg-image" accept="image/*" hidden>
+            </label>
+          </div>
+          <div class="bg-section">
+            <h4>Image URL</h4>
+            <div class="url-input">
+              <input type="text" id="bg-url" placeholder="Paste image URL">
+              <button id="set-bg-url">Preview</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="preview" id="bg-preview"></div>
