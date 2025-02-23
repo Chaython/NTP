@@ -314,8 +314,22 @@ document.getElementById('add-favorite').addEventListener('click', () => {
 
 // Browsing History
 function loadHistory() {
-  const historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
-  chrome.history.search({ text: '', maxResults: historyCount }, (historyItems) => {
+  const historyCount = parseInt(localStorage.getItem('historyCount'));
+  const historySection = document.querySelector('.history');
+  
+  // Clear any existing display style
+  historySection.style.removeProperty('display');
+  
+  // Hide section and return if count is explicitly 0
+  if (historyCount === 0) {
+    historySection.style.display = 'none';
+    return;
+  }
+  
+  // Use a default of 16 if no count is set
+  const maxResults = historyCount || 16;
+  
+  chrome.history.search({ text: '', maxResults }, (historyItems) => {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '';
     historyItems.forEach(item => {
@@ -339,13 +353,17 @@ function loadHistory() {
 
 function initializeHistoryCount() {
   const countSelect = document.getElementById('history-count');
-  let historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
+  const storedCount = localStorage.getItem('historyCount');
+  let historyCount = storedCount !== null ? parseInt(storedCount) : 16;
+  
+  // Set initial value
   countSelect.value = historyCount.toString();
+  loadHistory();
   
   countSelect.addEventListener('change', () => {
     historyCount = parseInt(countSelect.value);
     localStorage.setItem('historyCount', historyCount);
-    loadHistory(); // Reload history with new count
+    loadHistory();
   });
 }
 
@@ -514,6 +532,19 @@ function initializeWeatherToggle() {
   });
   
   updateWeatherView();
+}
+
+// History Management
+function initializeHistoryCount() {
+  const countSelect = document.getElementById('history-count');
+  let historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
+  countSelect.value = historyCount.toString();
+  
+  countSelect.addEventListener('change', () => {
+    historyCount = parseInt(countSelect.value);
+    localStorage.setItem('historyCount', historyCount);
+    loadHistory(); // Reload history with new count
+  });
 }
 
 // Initialize
