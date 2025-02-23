@@ -74,42 +74,190 @@ async function getWeather() {
 }
 
 // Search Functionality
-const searchProviders = [
-  { name: 'Google', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/favicon.ico' },
-  { name: 'Bing', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/sa/simg/favicon-2x.ico' },
-  { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=', icon: 'https://duckduckgo.com/favicon.ico' }
+const defaultSearchProviders = [
+  { name: 'Google', url: 'https://www.google.com/search?q=%s', icon: 'https://www.google.com/favicon.ico' },
+  { name: 'Bing', url: 'https://www.bing.com/search?q=%s', icon: 'https://www.bing.com/sa/simg/favicon-2x.ico' },
+  { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=%s', icon: 'https://duckduckgo.com/favicon.ico' }
 ];
 
-function initializeSearchProvider() {
-  let currentProviderIndex = parseInt(localStorage.getItem('searchProviderIndex'), 10);
-  if (isNaN(currentProviderIndex)) {
-    currentProviderIndex = 0;
+function getSearchProviders() {
+  const saved = localStorage.getItem('searchProviders');
+  const providers = saved ? JSON.parse(saved) : defaultSearchProviders;
+  // Ensure at least one provider exists
+  if (providers.length === 0) {
+    providers.push(defaultSearchProviders[0]);
   }
+  return providers;
+}
 
-  const searchBar = document.getElementById('search-bar');
-  const searchProviderIcon = document.getElementById('search-provider');
+function saveSearchProviders(providers) {
+  localStorage.setItem('searchProviders', JSON.stringify(providers));
+}
 
-  function updateSearchProvider() {
-    const provider = searchProviders[currentProviderIndex];
-    searchProviderIcon.src = provider.icon;
-    localStorage.setItem('searchProviderIndex', currentProviderIndex);
+function getDomainFromUrl(url) {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+    return urlObj.hostname.replace('www.', '');
+  } catch (e) {
+    return null;
   }
+}
 
-  searchBar.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const query = e.target.value;
-      const provider = searchProviders[currentProviderIndex];
-      window.location.href = `${provider.url}${encodeURIComponent(query)}`;
+function formatProviderName(domain) {
+  return domain
+    .split('.')[0]
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function getFaviconUrl(domain) {
+  return `https://www.google.com/s2/favicons?domain=${domain}`;
+}
+
+function normalizeSearchUrl(url) {
+  // Ensure URL has protocol
+  if (!url.startsWith('http')) {
+    url = 'https://' + url;
+  }
+  
+  try {
+    const urlObj = new URL(url);
+    // If URL doesn't have a path or just has '/', add '/search' as default
+    if (urlObj.pathname === '' || urlObj.pathname === '/') {
+      urlObj.pathname = '/search';
+    }
+    // If no query parameter is present, add '?q='
+    if (!urlObj.search && !url.includes('%s')) {
+      return urlObj.toString() + '?q=%s';
+    }
+    // If no %s placeholder, append it to existing query
+    if (!url.includes('%s')) {
+      return urlObj.toString() + (urlObj.search ? '&' : '?') + 'q=%s';
+    }
+    return url;
+  } catch (e) {
+    console.error('Invalid URL:', url);
+    return 'https://www.google.com/search?q=%s';
+  }
+}
+
+function initializeSearchProviderManager() {
+  const providersList = document.getElementById('search-providers-list');
+  const addButton = document.getElementById('add-provider');
+  const urlInput = document.getElementById('provider-url');
+  const nameInput = document.getElementById('provider-name');
+  const iconInput = document.getElementById('provider-icon');
+  let providers = getSearchProviders();
+
+  // Add URL input handler for auto-fill
+  urlInput.addEventListener('blur', () => {
+    const url = urlInput.value.trim();
+    const domain = getDomainFromUrl(url);
+    
+    if (domain && !nameInput.value.trim()) {
+      nameInput.value = formatProviderName(domain);
+    }
+    
+    if (domain && !iconInput.value.trim()) {
+      iconInput.value = getFaviconUrl(domain);
     }
   });
 
-  searchProviderIcon.addEventListener('click', () => {
-    currentProviderIndex = (currentProviderIndex + 1) % searchProviders.length;
-    updateSearchProvider();
-    console.log('Search provider changed to:', searchProviders[currentProviderIndex].name);
+  function updateProvidersList() {
+    providersList.innerHTML = '';
+    providers.forEach((provider, index) => {
+      const item = document.createElement('div');
+      item.className = 'provider-item';
+      
+      const icon = document.createElement('img');
+      icon.src = provider.icon || 'default-icon.png';
+      icon.alt = provider.name;
+      
+      const name = document.createElement('span');
+      name.className = 'provider-name';
+      name.textContent = provider.name;
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-provider';
+      removeBtn.textContent = '×';
+      // Disable remove button if this is the last provider
+      removeBtn.disabled = providers.length === 1;
+      removeBtn.title = providers.length === 1 ? 'Cannot remove last search provider' : 'Remove provider';
+      
+      removeBtn.onclick = () => {
+        if (providers.length > 1) {
+          providers = providers.filter((_, i) => i !== index);
+          saveSearchProviders(providers);
+          updateProvidersList();
+          initializeSearchProvider();
+        } else {
+          alert('Cannot remove the last search provider. At least one provider is required.');
+        }
+      };
+      
+      item.appendChild(icon);
+      item.appendChild(name);
+      item.appendChild(removeBtn);
+      providersList.appendChild(item);
+    });
+  }
+  
+  addButton.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    const icon = iconInput.value.trim();
+    
+    if (url) {
+      const domain = getDomainFromUrl(url);
+      const searchUrl = normalizeSearchUrl(url);
+      providers.push({ 
+        name: name || formatProviderName(domain),
+        url: searchUrl,
+        icon: icon || getFaviconUrl(domain)
+      });
+      saveSearchProviders(providers);
+      updateProvidersList();
+      initializeSearchProvider();
+      
+      // Clear inputs
+      nameInput.value = '';
+      urlInput.value = '';
+      iconInput.value = '';
+    }
   });
+  
+  updateProvidersList();
+}
 
-  // Initial setup
+function initializeSearchProvider() {
+  const providers = getSearchProviders();
+  let currentProviderIndex = parseInt(localStorage.getItem('searchProviderIndex'), 10) || 0;
+  if (currentProviderIndex >= providers.length) currentProviderIndex = 0;
+  
+  const searchBar = document.getElementById('search-bar');
+  const searchProviderIcon = document.getElementById('search-provider');
+  
+  function updateSearchProvider() {
+    const provider = providers[currentProviderIndex];
+    searchProviderIcon.src = provider.icon || 'default-icon.png';
+    localStorage.setItem('searchProviderIndex', currentProviderIndex);
+  }
+  
+  searchBar.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = e.target.value;
+      const provider = providers[currentProviderIndex];
+      const searchUrl = provider.url.replace('%s', encodeURIComponent(query));
+      window.location.href = searchUrl;
+    }
+  });
+  
+  searchProviderIcon.addEventListener('click', () => {
+    currentProviderIndex = (currentProviderIndex + 1) % providers.length;
+    updateSearchProvider();
+  });
+  
   updateSearchProvider();
 }
 
@@ -166,7 +314,8 @@ document.getElementById('add-favorite').addEventListener('click', () => {
 
 // Browsing History
 function loadHistory() {
-  chrome.history.search({ text: '', maxResults: 16 }, (historyItems) => {
+  const historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
+  chrome.history.search({ text: '', maxResults: historyCount }, (historyItems) => {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '';
     historyItems.forEach(item => {
@@ -185,6 +334,18 @@ function loadHistory() {
       button.appendChild(name);
       historyList.appendChild(button);
     });
+  });
+}
+
+function initializeHistoryCount() {
+  const countSelect = document.getElementById('history-count');
+  let historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
+  countSelect.value = historyCount.toString();
+  
+  countSelect.addEventListener('change', () => {
+    historyCount = parseInt(countSelect.value);
+    localStorage.setItem('historyCount', historyCount);
+    loadHistory(); // Reload history with new count
   });
 }
 
@@ -365,4 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHistory();
   initializeBackgroundImage();
   initializeWeatherToggle();
+  initializeHistoryCount();
+  initializeSearchProviderManager();
 });

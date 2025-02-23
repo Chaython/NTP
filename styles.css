@@ -371,3 +371,51 @@ html.dark .bg-section {
   background: #4CAF50;
   color: white;
 }
+
+/* Search provider management */
+.search-providers-list {
+  margin-bottom: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.provider-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--button-border);
+  border-radius: 5px;
+  margin-bottom: 5px;
+  background: var(--button-bg);
+}
+
+.provider-item img {
+  width: 16px;
+  height: 16px;
+}
+
+.provider-item .provider-name {
+  flex-grow: 1;
+}
+
+.provider-item .remove-provider {
+  color: #ff4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 8px;
+  font-weight: bold;
+}
+
+.provider-item .remove-provider:disabled {
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.add-provider-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

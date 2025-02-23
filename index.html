@@ -69,6 +69,27 @@
             </select>
           </div>
           <div class="bg-section">
+            <h4>History Items</h4>
+            <select id="history-count" class="theme-select">
+              <option value="8">8 items</option>
+              <option value="16">16 items</option>
+              <option value="24">24 items</option>
+              <option value="32">32 items</option>
+            </select>
+          </div>
+          <div class="bg-section">
+            <h4>Search Providers</h4>
+            <div class="search-providers-list" id="search-providers-list">
+              <!-- Providers will be inserted here -->
+            </div>
+            <div class="add-provider-form">
+              <input type="text" id="provider-url" placeholder="Search URL (e.g., https://example.com/search?q=%s)" class="theme-select">
+              <input type="text" id="provider-name" placeholder="Provider Name (auto-generated if empty)" class="theme-select">
+              <input type="text" id="provider-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
+              <button id="add-provider" class="theme-select">Add Provider</button>
+            </div>
+          </div>
+          <div class="bg-section">
             <h4>Upload Image</h4>
             <label class="dropzone" id="dropzone">
               Drop image here or click to select
