@@ -11,6 +11,7 @@
   --add-button-border: #ccc;
   --footer-spacing: 10px;
   --button-radius: 25px;
+  --search-radius: 25px;
 }
 
 /* Dark mode class on <html> */
@@ -29,6 +30,7 @@ html.dark {
 /* Update square buttons to have no radius */
 html.square-buttons {
   --button-radius: 0;
+  --search-radius: 0;
 }
 
 /* Add no-box button styles */
@@ -56,6 +58,10 @@ html.nobox-buttons .app-btn:hover,
 html.nobox-buttons .history-btn:hover {
   background-color: rgba(127, 127, 127, 0.1);
   transform: scale(1.1);      /* Slightly bigger hover effect */
+}
+
+html.nobox-buttons {
+  --search-radius: 5px;
 }
 
 body {
@@ -197,7 +203,7 @@ body {
   padding-right: 40px;  /* Make room for the provider icon */
   font-size: clamp(14px, 1.6vw, 16px);
   border: 1px solid var(--input-border);
-  border-radius: 5px;
+  border-radius: var(--search-radius);  /* Use new variable */
   background-color: var(--input-bg);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
@@ -213,7 +219,7 @@ body {
   height: clamp(24px, 3vw, 32px);
   cursor: pointer;
   padding: 4px;
-  border-radius: 50%;
+  border-radius: var(--search-radius);  /* Use new variable */
   transition: background-color 0.2s;
 }
 
@@ -305,12 +311,34 @@ body.has-bg {
 
 .modal-content {
   background: var(--background);
-  margin: 50px auto;
+  margin: 20px auto;        /* Reduced from 50px to give more space */
   padding: 20px;
-  width: 80%;
+  width: 90%;              /* Increased from 80% for smaller screens */
   max-width: 800px;
   border-radius: 10px;
   box-shadow: 0 0 20px var(--shadow);
+  max-height: 90vh;        /* Limit height to 90% of viewport */
+  overflow-y: auto;        /* Enable vertical scrolling */
+  overflow-x: hidden;      /* Prevent horizontal scrolling */
+}
+
+/* Add smooth scrolling behavior */
+.modal-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 5px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--button-border);
+  border-radius: 5px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
 }
 
 html.dark .modal-content {
