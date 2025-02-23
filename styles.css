@@ -126,8 +126,9 @@ body {
 .app-btn, .history-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;  /* Reduced gap between elements */
+  justify-content: flex-start;
+  padding: 15px 10px 10px;     /* Increased top and bottom padding */
+  gap: 6px;                    /* Slightly increased gap */
   width: clamp(120px, calc(12.5% - 15px), 150px);
   aspect-ratio: 1;
   height: auto;
@@ -137,9 +138,8 @@ body {
   box-shadow: 0 2px 5px var(--shadow);
   text-decoration: none;
   color: var(--text-color);
-  font-size: clamp(12px, 1.2vw, 14px);
+  font-size: clamp(11px, 1.1vw, 13px);  /* Slightly smaller font for more text */
   flex-direction: column;
-  padding: 10px;  /* Reduced padding */
   box-sizing: border-box;
 }
 
@@ -148,23 +148,23 @@ body {
 }
 
 .app-btn img, .history-btn img {
-  width: clamp(24px, 25%, 32px);
+  width: clamp(28px, 30%, 36px);  /* Increased icon size */
   height: auto;
   aspect-ratio: 1;
-  margin: 0;  /* Removed margin */
+  margin: 0;                   /* Remove margin */
+  padding: 0;                  /* Remove padding */
 }
 
 .app-btn span, .history-btn span {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;    /* Allow 3 lines of text */
   -webkit-box-orient: vertical;
   overflow: hidden;
   width: 100%;
-  padding: 0;  /* Removed padding */
-  box-sizing: border-box;
   text-align: center;
-  line-height: 1.2;
-  height: 2.4em;
+  line-height: 1.15;        /* Slightly reduced line height */
+  height: 3.45em;           /* Adjusted height to match new line height */
+  margin: 0;                   /* Remove margin */
 }
 
 /* Other elements */
