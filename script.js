@@ -290,34 +290,32 @@ function loadApps() {
 // Favorites
 function loadFavorites() {
   const bookmarksCount = parseInt(localStorage.getItem('bookmarksCount'));
-  const favoritesList = document.getElementById('favorites-list');
-  const favoritesSection = document.querySelector('.favorites');
+  const bookmarksList = document.getElementById('bookmarks-list');
+  const bookmarksSection = document.querySelector('.bookmarks');
   
   // Clear existing content and exit if needed
-  favoritesList.innerHTML = '';
+  bookmarksList.innerHTML = '';
   
   if (bookmarksCount === 0) {
-    favoritesSection.style.display = 'none';
+    bookmarksSection.style.display = 'none';
     return;
   }
   
-  favoritesSection.style.display = 'block';
+  bookmarksSection.style.display = 'block';
   const maxResults = bookmarksCount || 8;
 
   if (chrome?.bookmarks?.getRecent) {
-    // Only get exactly the number we need
     chrome.bookmarks.getRecent(maxResults, (recentBookmarks) => {
-      // Take only the exact number of bookmarks we want to display
       const bookmarksToShow = recentBookmarks.slice(0, maxResults);
       
       if (bookmarksToShow.length > 0) {
-        bookmarksToShow.forEach(bookmark => addBookmarkElement(bookmark, favoritesList));
+        bookmarksToShow.forEach(bookmark => addBookmarkElement(bookmark, bookmarksList));
       } else {
-        favoritesList.innerHTML = '<p>No bookmarks found</p>';
+        bookmarksList.innerHTML = '<p>No bookmarks found</p>';
       }
     });
   } else {
-    favoritesList.innerHTML = '<div class="no-bookmarks">Please enable bookmarks permission in extension settings</div>';
+    bookmarksList.innerHTML = '<div class="no-bookmarks">Please enable bookmarks permission in extension settings</div>';
   }
 }
 

@@ -1,4 +1,4 @@
-/* Default variables (light mode) */
+/* Default variables */
 :root {
   --background: #f0f0f0;
   --text-color: #333;
@@ -14,7 +14,7 @@
   --search-radius: 25px;
 }
 
-/* Dark mode class on <html> */
+/* Dark mode */
 html.dark {
   --background: #000000;
   --text-color: #ffffff;
@@ -27,29 +27,29 @@ html.dark {
   --add-button-border: #333333;
 }
 
-/* Update square buttons to have no radius */
+/* Square buttons mode */
 html.square-buttons {
   --button-radius: 0;
   --search-radius: 0;
 }
 
-/* Add no-box button styles */
+/* No-box mode */
 html.nobox-buttons .app-btn,
 html.nobox-buttons .history-btn {
   background: none;
   border: none;
   box-shadow: none;
-  padding: 18px 12px 12px;    /* Increased padding */
+  padding: 18px 12px 12px;
 }
 
 html.nobox-buttons .app-btn img,
 html.nobox-buttons .history-btn img {
-  width: clamp(32px, 35%, 42px);  /* Bigger icons in transparent mode */
+  width: clamp(32px, 35%, 42px);
 }
 
 html.nobox-buttons .app-btn span,
 html.nobox-buttons .history-btn span {
-  font-size: clamp(12px, 1.2vw, 14px);  /* Bigger text in transparent mode */
+  font-size: clamp(12px, 1.2vw, 14px);
   line-height: 1.2;
   height: 3.6em;
 }
@@ -57,13 +57,14 @@ html.nobox-buttons .history-btn span {
 html.nobox-buttons .app-btn:hover,
 html.nobox-buttons .history-btn:hover {
   background-color: rgba(127, 127, 127, 0.1);
-  transform: scale(1.1);      /* Slightly bigger hover effect */
+  transform: scale(1.1);
 }
 
 html.nobox-buttons {
   --search-radius: 5px;
 }
 
+/* Base styles */
 body {
   font-family: Arial, sans-serif;
   background-color: var(--background);
@@ -78,6 +79,7 @@ body {
   min-width: 320px;
 }
 
+/* Layout components */
 .container {
   max-width: 1200px;
   width: 100%;
@@ -88,10 +90,11 @@ body {
   gap: 2vh;
 }
 
-.apps, .favorites, .weather, .search, .history {
+.apps, .bookmarks, .weather, .search, .history {
   margin: 1vh 0;
 }
 
+/* Weather section */
 .weather {
   position: relative;
   transition: all 0.3s ease;
@@ -133,7 +136,7 @@ body {
   display: none;
 }
 
-#apps-list, #history-list, #favorites-list {
+#apps-list, #history-list, #bookmarks-list {
   display: flex;
   flex-wrap: wrap;
   gap: clamp(10px, 1.5vw, 15px);
@@ -142,13 +145,13 @@ body {
   width: 100%;
 }
 
-/* Squircle Button Styling */
+/* Button styles */
 .app-btn, .history-btn {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 15px 10px 10px;     /* Increased top and bottom padding */
-  gap: 6px;                    /* Slightly increased gap */
+  padding: 15px 10px 10px;
+  gap: 6px;
   width: clamp(120px, calc(12.5% - 15px), 150px);
   aspect-ratio: 1;
   height: auto;
@@ -158,7 +161,7 @@ body {
   box-shadow: 0 2px 5px var(--shadow);
   text-decoration: none;
   color: var(--text-color);
-  font-size: clamp(11px, 1.1vw, 13px);  /* Slightly smaller font for more text */
+  font-size: clamp(11px, 1.1vw, 13px);
   flex-direction: column;
   box-sizing: border-box;
 }
@@ -168,42 +171,42 @@ body {
 }
 
 .app-btn img, .history-btn img {
-  width: clamp(28px, 30%, 36px);  /* Increased icon size */
+  width: clamp(28px, 30%, 36px);
   height: auto;
   aspect-ratio: 1;
-  margin: 0;                   /* Remove margin */
-  padding: 0;                  /* Remove padding */
+  margin: 0;
+  padding: 0;
 }
 
 .app-btn span, .history-btn span {
   display: -webkit-box;
-  -webkit-line-clamp: 3;    /* Allow 3 lines of text */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   width: 100%;
   text-align: center;
-  line-height: 1.15;        /* Slightly reduced line height */
-  height: 3.45em;           /* Adjusted height to match new line height */
-  margin: 0;                   /* Remove margin */
+  line-height: 1.15;
+  height: 3.45em;
+  margin: 0;
 }
 
-/* Other elements */
+/* Search elements */
 #search-container {
   display: flex;
   align-items: center;
   width: 100%;
   margin: 2vh 0;
   position: relative;
-  max-width: none; /* Ensure no max-width is applied */
+  max-width: none;
 }
 
 #search-bar {
   width: 100%;
   padding: clamp(8px, 1vw, 10px);
-  padding-right: 40px;  /* Make room for the provider icon */
+  padding-right: 40px;
   font-size: clamp(14px, 1.6vw, 16px);
   border: 1px solid var(--input-border);
-  border-radius: var(--search-radius);  /* Use new variable */
+  border-radius: var(--search-radius);
   background-color: var(--input-bg);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
@@ -219,7 +222,7 @@ body {
   height: clamp(24px, 3vw, 32px);
   cursor: pointer;
   padding: 4px;
-  border-radius: var(--search-radius);  /* Use new variable */
+  border-radius: var(--search-radius);
   transition: background-color 0.2s;
 }
 
@@ -227,7 +230,6 @@ body {
   background-color: var(--button-border);
 }
 
-/* Remove these old styles */
 #favorite-input, #add-favorite {
   display: none;
 }
@@ -247,8 +249,8 @@ body {
   right: 20px;
   width: 50px;
   height: 50px;
-  background: none;    /* Remove background */
-  border: none;        /* Remove border */
+  background: none;
+  border: none;
   color: var(--text-color);
   font-size: 24px;
   cursor: pointer;
@@ -261,7 +263,7 @@ body {
 
 .settings-btn:hover {
   transform: scale(1.1);
-  background: none;    /* Remove hover background */
+  background: none;
 }
 
 .theme-select {
@@ -275,12 +277,10 @@ body {
   margin-top: 10px;
 }
 
-/* Remove footer-related styles */
 .settings-footer {
   display: none;
 }
 
-/* Add semi-transparent overlay when background image is present */
 body.has-bg::before {
   content: '';
   position: fixed;
@@ -297,7 +297,7 @@ body.has-bg {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* Modal Styles */
+/* Modal styles */
 .modal {
   display: none;
   position: fixed;
@@ -311,18 +311,17 @@ body.has-bg {
 
 .modal-content {
   background: var(--background);
-  margin: 20px auto;        /* Reduced from 50px to give more space */
+  margin: 20px auto;
   padding: 20px;
-  width: 90%;              /* Increased from 80% for smaller screens */
+  width: 90%;
   max-width: 800px;
   border-radius: 10px;
   box-shadow: 0 0 20px var(--shadow);
-  max-height: 90vh;        /* Limit height to 90% of viewport */
-  overflow-y: auto;        /* Enable vertical scrolling */
-  overflow-x: hidden;      /* Prevent horizontal scrolling */
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Add smooth scrolling behavior */
 .modal-content::-webkit-scrollbar {
   width: 10px;
 }
@@ -345,6 +344,7 @@ html.dark .modal-content {
   background: #000000;
 }
 
+/* Settings sections */
 .bg-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -409,7 +409,7 @@ html.dark .bg-section {
 
 .url-input-row input[type="text"] {
   flex: 1;
-  min-width: 0; /* Prevents input from overflowing */
+  min-width: 0;
   padding: 8px;
   border: 1px solid var(--button-border);
   border-radius: 5px;
@@ -439,7 +439,7 @@ html.dark .bg-section {
   border-radius: 5px;
   background: var(--button-bg);
   color: var(--text-color);
-  min-width: 0; /* Prevents input from overflowing */
+  min-width: 0;
 }
 
 .url-examples {
@@ -579,7 +579,7 @@ html.dark .bg-section {
   max-width: 400px;
 }
 
-/* Hide headers and adjust spacing */
+/* Header visibility */
 .hide-headers h2,
 .hide-headers h3,
 .hide-headers h4 {
@@ -587,17 +587,15 @@ html.dark .bg-section {
 }
 
 .hide-headers .apps,
-.hide-headers .favorites,
+.hide-headers .bookmarks,
 .hide-headers .weather,
 .hide-headers .history {
   margin: 10px 0;
 }
 
 .hide-headers #search-container {
-  margin: 20px 0; /* Remove 'auto' to prevent centering */
+  margin: 20px 0;
 }
-
-/* Remove any other header-related visibility rules */
 
 h2, h3, h4 {
   font-size: clamp(16px, 2vw, 24px);
