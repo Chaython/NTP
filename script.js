@@ -289,33 +289,78 @@ function loadApps() {
 
 // Favorites
 function loadFavorites() {
-  const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const bookmarksCount = parseInt(localStorage.getItem('bookmarksCount'));
   const favoritesList = document.getElementById('favorites-list');
+  const favoritesSection = document.querySelector('.favorites');
+  
+  // Clear existing content and exit if needed
   favoritesList.innerHTML = '';
-  favorites.forEach(fav => {
-    const link = document.createElement('a');
-    link.href = fav;
-    link.textContent = fav;
-    favoritesList.appendChild(link);
-  });
+  
+  if (bookmarksCount === 0) {
+    favoritesSection.style.display = 'none';
+    return;
+  }
+  
+  favoritesSection.style.display = 'block';
+  const maxResults = bookmarksCount || 8;
+
+  if (chrome?.bookmarks?.getRecent) {
+    // Only get exactly the number we need
+    chrome.bookmarks.getRecent(maxResults, (recentBookmarks) => {
+      // Take only the exact number of bookmarks we want to display
+      const bookmarksToShow = recentBookmarks.slice(0, maxResults);
+      
+      if (bookmarksToShow.length > 0) {
+        bookmarksToShow.forEach(bookmark => addBookmarkElement(bookmark, favoritesList));
+      } else {
+        favoritesList.innerHTML = '<p>No bookmarks found</p>';
+      }
+    });
+  } else {
+    favoritesList.innerHTML = '<div class="no-bookmarks">Please enable bookmarks permission in extension settings</div>';
+  }
 }
 
-document.getElementById('add-favorite').addEventListener('click', () => {
-  const input = document.getElementById('favorite-input');
-  const url = input.value.trim();
-  if (url) {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    favorites.push(url);
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-    loadFavorites();
-    input.value = '';
+function addBookmarkElement(bookmark, container) {
+  const button = document.createElement('a');
+  button.href = bookmark.url;
+  button.className = 'app-btn';
+  
+  const favicon = document.createElement('img');
+  // Handle browser-specific URLs
+  const isInternalUrl = /^(chrome|brave|edge|firefox):/.test(bookmark.url);
+  if (isInternalUrl) {
+    // Use a generic icon for internal browser pages
+    favicon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIj48L2NpcmNsZT48bGluZSB4MT0iMiIgeTE9IjEyIiB4Mj0iMjIiIHkyPSIxMiI+PC9saW5lPjxwYXRoIGQ9Ik0xMiAyYTE1LjMgMTUuMyAwIDAgMSA0IDEwIDE1LjMgMTUuMyAwIDAgMS00IDEwIDE1LjMgMTUuMyAwIDAgMSA0LTEweiI+PC9wYXRoPjwvc3ZnPg==';
+  } else {
+    favicon.src = `https://www.google.com/s2/favicons?domain=${bookmark.url}`;
   }
-});
+  favicon.alt = `${bookmark.title} favicon`;
+  
+  const name = document.createElement('span');
+  name.textContent = bookmark.title;
+  
+  button.appendChild(favicon);
+  button.appendChild(name);
+  
+  // For internal URLs, prevent default and use chrome.tabs.create
+  if (isInternalUrl) {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (chrome?.tabs?.create) {
+        chrome.tabs.create({ url: bookmark.url });
+      }
+    });
+  }
+  
+  container.appendChild(button);
+}
 
 // Browsing History
 function loadHistory() {
   const historyCount = parseInt(localStorage.getItem('historyCount'));
   const historySection = document.querySelector('.history');
+  const historyList = document.getElementById('history-list');
   
   // Clear any existing display style
   historySection.style.removeProperty('display');
@@ -329,26 +374,33 @@ function loadHistory() {
   // Use a default of 16 if no count is set
   const maxResults = historyCount || 16;
   
-  chrome.history.search({ text: '', maxResults }, (historyItems) => {
-    const historyList = document.getElementById('history-list');
-    historyList.innerHTML = '';
-    historyItems.forEach(item => {
-      const button = document.createElement('a');
-      button.href = item.url;
-      button.className = 'history-btn';
-      
-      const favicon = document.createElement('img');
-      favicon.src = `https://www.google.com/s2/favicons?domain=${item.url}`;
-      favicon.alt = 'favicon';
-      
-      const name = document.createElement('span');
-      name.textContent = item.title || item.url.split('/')[2] || item.url;
-      
-      button.appendChild(favicon);
-      button.appendChild(name);
-      historyList.appendChild(button);
+  // Check if Chrome API is available
+  if (typeof chrome !== 'undefined' && chrome.history) {
+    chrome.history.search({ text: '', maxResults }, (historyItems) => {
+      historyList.innerHTML = '';
+      historyItems.forEach(item => {
+        if (item.url) {
+          const button = document.createElement('a');
+          button.href = item.url;
+          button.className = 'history-btn';
+          
+          const favicon = document.createElement('img');
+          favicon.src = `https://www.google.com/s2/favicons?domain=${item.url}`;
+          favicon.alt = 'favicon';
+          
+          const name = document.createElement('span');
+          name.textContent = item.title || item.url.split('/')[2] || item.url;
+          
+          button.appendChild(favicon);
+          button.appendChild(name);
+          historyList.appendChild(button);
+        }
+      });
     });
-  });
+  } else {
+    // Fallback for when Chrome API isn't available
+    historyList.innerHTML = '<p>History not available</p>';
+  }
 }
 
 function initializeHistoryCount() {
@@ -467,16 +519,19 @@ function initializeBackgroundImage() {
   });
 
   // URL input
-  document.getElementById('set-bg-url').addEventListener('click', () => {
-    const url = document.getElementById('bg-url').value.trim();
+  document.getElementById('bg-url').addEventListener('input', debounce((e) => {
+    const url = e.target.value.trim();
     if (url) {
-      updatePreview(url);
-      document.getElementById('bg-url').value = '';
+      // Create a temporary image to verify the URL works
+      const img = new Image();
+      img.onload = () => updatePreview(url);
+      img.onerror = () => console.log('Invalid image URL');
+      img.src = url;
     }
-  });
+  }, 500)); // Debounce by 500ms to avoid too many preview attempts
 
   // Apply button
-  document.getElementById('apply-bg').addEventListener('click', () => {
+  document.getElementById('apply').addEventListener('click', () => {
     if (currentPreview) {
       setBackgroundImage(currentPreview);
     }
@@ -502,7 +557,7 @@ function initializeBackgroundImage() {
 
 // Add weather toggle functionality
 function initializeWeatherToggle() {
-  const displaySelect = document.getElementById('weather-display');
+  const displaySelect = document.getElementById('weather');
   const textView = document.getElementById('weather-info');
   const iconView = document.getElementById('weather-icon-view');
   const weatherSection = document.querySelector('.weather');
@@ -535,16 +590,69 @@ function initializeWeatherToggle() {
   updateWeatherView();
 }
 
+// Add debounce function at the top of your file
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Add function to manage header visibility
+function initializeHeaderVisibility() {
+  const visibilitySelect = document.getElementById('headers-visibility');
+  const container = document.querySelector('.container');
+  
+  function updateHeaderVisibility(shouldHide) {
+    container.classList.toggle('hide-headers', shouldHide);
+    localStorage.setItem('hideHeaders', shouldHide);
+  }
+  
+  // Load saved preference
+  const hideHeaders = localStorage.getItem('hideHeaders') === 'true';
+  visibilitySelect.value = hideHeaders ? 'hide' : 'show';
+  updateHeaderVisibility(hideHeaders);
+  
+  // Handle changes
+  visibilitySelect.addEventListener('change', () => {
+    const shouldHide = visibilitySelect.value === 'hide';
+    updateHeaderVisibility(shouldHide);
+  });
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeTheme();
   initializeSearchProvider();
   getWeather();
   loadApps();
-  loadFavorites();
   loadHistory();
   initializeBackgroundImage();
   initializeWeatherToggle();
   initializeHistoryCount();
   initializeSearchProviderManager();
+  initializeBookmarksCount(); // This will call loadFavorites
+  initializeHeaderVisibility();
 });
+
+function initializeBookmarksCount() {
+  const countSelect = document.getElementById('bookmarks-count');
+  const storedCount = localStorage.getItem('bookmarksCount');
+  // Changed to properly handle zero value, similar to history count
+  let bookmarksCount = storedCount !== null ? parseInt(storedCount) : 8;
+  
+  // Set initial value
+  countSelect.value = bookmarksCount.toString();
+  loadFavorites();
+  
+  countSelect.addEventListener('change', () => {
+    bookmarksCount = parseInt(countSelect.value);
+    localStorage.setItem('bookmarksCount', bookmarksCount);
+    loadFavorites();
+  });
+}

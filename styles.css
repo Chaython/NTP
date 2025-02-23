@@ -29,23 +29,28 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--background);
   margin: 0;
-  padding: 20px;
+  padding: 2vw;
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   min-height: 100vh;
+  min-width: 320px;
 }
 
 .container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
 }
 
 .apps, .favorites, .weather, .search, .history {
-  margin: 20px 0;
+  margin: 1vh 0;
 }
 
 .weather {
@@ -70,8 +75,8 @@ body {
 }
 
 .weather-icon-container img {
-  width: 100px;
-  height: 100px;
+  width: clamp(60px, 8vw, 100px);
+  height: clamp(60px, 8vw, 100px);
 }
 
 .weather-icon-container span {
@@ -89,12 +94,13 @@ body {
   display: none;
 }
 
-#apps-list, #history-list {
+#apps-list, #history-list, #favorites-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
+  gap: clamp(10px, 1.5vw, 15px);
+  justify-content: start;
   padding: 0;
+  width: 100%;
 }
 
 /* Squircle Button Styling */
@@ -102,18 +108,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
+  width: clamp(120px, calc(12.5% - 15px), 150px);
+  height: clamp(80px, 10vw, 120px);
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
   border-radius: 25px; /* Squircle shape */
   box-shadow: 0 2px 5px var(--shadow);
   text-decoration: none;
   color: var(--text-color);
-  font-size: 14px;
+  font-size: clamp(12px, 1.2vw, 14px);
   flex-direction: column;
   gap: 10px;
   transition: transform 0.2s, background-color 0.3s, color 0.3s, border-color 0.3s;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .app-btn:hover, .history-btn:hover {
@@ -121,65 +129,66 @@ body {
 }
 
 .app-btn img, .history-btn img {
-  width: 32px;
-  height: 32px;
+  width: clamp(24px, 3vw, 32px);
+  height: clamp(24px, 3vw, 32px);
 }
 
 .app-btn span, .history-btn span {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.2;
+  height: 2.4em;
 }
 
 /* Other elements */
-#favorites-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
 #search-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  width: 100%;
+  margin: 2vh 0;
+  position: relative;
+  max-width: none; /* Ensure no max-width is applied */
 }
 
 #search-bar {
-  flex-grow: 1;
-  width: 50%;
-  padding: 10px;
-  font-size: 16px;
+  width: 100%;
+  padding: clamp(8px, 1vw, 10px);
+  padding-right: 40px;  /* Make room for the provider icon */
+  font-size: clamp(14px, 1.6vw, 16px);
   border: 1px solid var(--input-border);
   border-radius: 5px;
   background-color: var(--input-bg);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  box-sizing: border-box;
 }
 
 #search-provider {
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(24px, 3vw, 32px);
+  height: clamp(24px, 3vw, 32px);
   cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 }
 
-#favorite-input {
-  padding: 5px;
-  margin-right: 10px;
-  border: 1px solid var(--input-border);
-  border-radius: 5px;
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+#search-provider:hover {
+  background-color: var(--button-border);
 }
 
-#add-favorite {
-  background-color: var(--add-button-bg);
-  color: var(--text-color);
-  border: 1px solid var(--add-button-border);
-  border-radius: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+/* Remove these old styles */
+#favorite-input, #add-favorite {
+  display: none;
 }
 
 #add-favorite:hover {
@@ -187,7 +196,7 @@ body {
 }
 
 #weather-info {
-  font-size: 18px;
+  font-size: clamp(14px, 1.6vw, 18px);
 }
 
 /* Settings Button */
@@ -285,6 +294,8 @@ html.dark .modal-content {
   padding: 15px;
   border-radius: 8px;
   border: 1px solid var(--button-border);
+  display: flex;
+  flex-direction: column;
 }
 
 html.dark .bg-section {
@@ -322,11 +333,50 @@ html.dark .bg-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .url-input-row {
   display: flex;
   gap: 10px;
+  width: 100%;
+}
+
+.url-input-row input[type="text"] {
+  flex: 1;
+  min-width: 0; /* Prevents input from overflowing */
+  padding: 8px;
+  border: 1px solid var(--button-border);
+  border-radius: 5px;
+  background: var(--button-bg);
+  color: var(--text-color);
+}
+
+.url-input-row button {
+  white-space: nowrap;
+  padding: 8px 15px;
+  border: 1px solid var(--button-border);
+  border-radius: 5px;
+  background: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.url-input-row button:hover {
+  background: var(--button-border);
+}
+
+.url-input input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid var(--button-border);
+  border-radius: 5px;
+  background: var(--button-bg);
+  color: var(--text-color);
+  min-width: 0; /* Prevents input from overflowing */
 }
 
 .url-examples {
@@ -335,16 +385,36 @@ html.dark .bg-section {
   opacity: 0.7;
   text-align: left;
   margin-top: 5px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  padding-right: 5px;
 }
 
 .preview {
   width: 100%;
-  height: 200px;
-  margin: 20px 0;
+  height: 150px;
+  margin: 15px 0;
   border-radius: 8px;
   background-size: cover;
   background-position: center;
   border: 1px solid var(--button-border);
+  box-sizing: border-box;
+}
+
+.remove-bg {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 15px;
+  border-radius: 5px;
+  border: 1px solid var(--button-border);
+  background: #ff4444;
+  color: white;
+  cursor: pointer;
+}
+
+.remove-bg:hover {
+  background: #ff2222;
 }
 
 .modal-footer {
@@ -367,7 +437,7 @@ html.dark .bg-section {
   background: var(--button-border);
 }
 
-#apply-bg {
+#apply {
   background: #4CAF50;
   color: white;
 }
@@ -418,4 +488,55 @@ html.dark .bg-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.add-provider-form input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 8px;
+  margin: 0;
+}
+
+.add-provider-form button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* No bookmarks message */
+.no-bookmarks {
+  padding: 20px;
+  color: var(--text-color);
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: 8px;
+  margin: 10px auto;
+  max-width: 400px;
+}
+
+/* Hide headers and adjust spacing */
+.hide-headers h2,
+.hide-headers h3,
+.hide-headers h4 {
+  display: none;
+}
+
+.hide-headers .apps,
+.hide-headers .favorites,
+.hide-headers .weather,
+.hide-headers .history {
+  margin: 10px 0;
+}
+
+.hide-headers #search-container {
+  margin: 20px 0; /* Remove 'auto' to prevent centering */
+}
+
+/* Remove any other header-related visibility rules */
+
+h2, h3, h4 {
+  font-size: clamp(16px, 2vw, 24px);
+  margin: 1vh 0;
 }

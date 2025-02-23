@@ -15,10 +15,8 @@
 
     <!-- Favorites Section -->
     <div class="favorites">
-      <h2>Favorites</h2>
+      <h2>Bookmarks</h2>
       <div id="favorites-list"></div>
-      <input type="text" id="favorite-input" placeholder="Add a favorite URL">
-      <button id="add-favorite">Add</button>
     </div>
 
     <!-- Weather Section -->
@@ -61,11 +59,21 @@
             </select>
           </div>
           <div class="bg-section">
-            <h4>Weather Display</h4>
-            <select id="weather-display" class="theme-select">
+            <h4>Weather</h4>
+            <select id="weather" class="theme-select">
               <option value="text">Text View</option>
               <option value="icon">Icon View</option>
               <option value="hidden">Hidden</option>
+            </select>
+          </div>
+          <div class="bg-section">
+            <h4>Bookmarks</h4>
+            <select id="bookmarks-count" class="theme-select">
+              <option value="0">0 items - Hide Bookmarks</option>
+              <option value="8">8 items</option>
+              <option value="16">16 items</option>
+              <option value="24">24 items</option>
+              <option value="32">32 items</option>
             </select>
           </div>
           <div class="bg-section">
@@ -76,6 +84,13 @@
               <option value="16">16 items</option>
               <option value="24">24 items</option>
               <option value="32">32 items</option>
+            </select>
+          </div>
+          <div class="bg-section">
+            <h4>Headers</h4>
+            <select id="headers-visibility" class="theme-select">
+              <option value="show">Show Headers</option>
+              <option value="hide">Hide Headers</option>
             </select>
           </div>
           <div class="bg-section">
@@ -91,25 +106,21 @@
             </div>
           </div>
           <div class="bg-section">
-            <h4>Upload Image</h4>
+            <h4>Background Image</h4>
             <label class="dropzone" id="dropzone">
               Drop image here or click to select
               <input type="file" id="bg-image" accept="image/*" hidden>
             </label>
-          </div>
-          <div class="bg-section">
-            <h4>Image URL</h4>
             <div class="url-input">
-              <input type="text" id="bg-url" placeholder="Paste image URL">
-              <button id="set-bg-url">Preview</button>
+              <input type="text" id="bg-url" placeholder="Or paste image URL">
             </div>
+            <div class="preview" id="bg-preview"></div>
+            <button id="remove-bg" class="remove-bg">Remove Background</button>
           </div>
         </div>
       </div>
-      <div class="preview" id="bg-preview"></div>
       <div class="modal-footer">
-        <button id="remove-bg">Remove Background</button>
-        <button id="apply-bg">Apply</button>
+        <button id="apply">Apply</button>
         <button id="close-modal">Close</button>
       </div>
     </div>
