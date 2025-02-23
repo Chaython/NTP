@@ -37,11 +37,25 @@ html.nobox-buttons .history-btn {
   background: none;
   border: none;
   box-shadow: none;
+  padding: 18px 12px 12px;    /* Increased padding */
+}
+
+html.nobox-buttons .app-btn img,
+html.nobox-buttons .history-btn img {
+  width: clamp(32px, 35%, 42px);  /* Bigger icons in transparent mode */
+}
+
+html.nobox-buttons .app-btn span,
+html.nobox-buttons .history-btn span {
+  font-size: clamp(12px, 1.2vw, 14px);  /* Bigger text in transparent mode */
+  line-height: 1.2;
+  height: 3.6em;
 }
 
 html.nobox-buttons .app-btn:hover,
 html.nobox-buttons .history-btn:hover {
   background-color: rgba(127, 127, 127, 0.1);
+  transform: scale(1.1);      /* Slightly bigger hover effect */
 }
 
 body {
