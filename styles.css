@@ -14,6 +14,41 @@
   --search-radius: 25px;
 }
 
+/* Subtle scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(127, 127, 127, 0.3);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Add this at the top, before other rules */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 /* Dark mode */
 html.dark {
   --background: #000000;
@@ -68,8 +103,7 @@ html.nobox-buttons {
 body {
   font-family: Arial, sans-serif;
   background-color: var(--background);
-  margin: 0;
-  padding: 2vw;
+  padding: min(2vw, 20px);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
   background-size: cover;
@@ -77,6 +111,11 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
   min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* Layout components */
@@ -87,11 +126,13 @@ body {
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 2vh;
+  gap: 1vh;
+  flex: 1;
+  box-sizing: border-box;
 }
 
 .apps, .bookmarks, .weather, .search, .history {
-  margin: 1vh 0;
+  margin: 0.5vh 0;
 }
 
 /* Weather section */
@@ -317,27 +358,27 @@ body.has-bg {
   max-width: 800px;
   border-radius: 10px;
   box-shadow: 0 0 20px var(--shadow);
-  max-height: 90vh;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .modal-content::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 .modal-content::-webkit-scrollbar-track {
-  background: var(--background);
-  border-radius: 5px;
+  background: transparent;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background: var(--button-border);
-  border-radius: 5px;
+  background: rgba(127, 127, 127, 0.2);
+  border-radius: 4px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color);
+  background: rgba(127, 127, 127, 0.3);
 }
 
 html.dark .modal-content {
