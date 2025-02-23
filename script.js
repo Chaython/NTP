@@ -103,6 +103,42 @@ function getDomainFromUrl(url) {
   }
 }
 
+function getHighQualityIcon(url) {
+  const domain = getDomainFromUrl(url);
+  if (!domain) return null;
+  
+  const cleanDomain = domain.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  return [
+    // Clearbit's logo API (high quality)
+    `https://logo.clearbit.com/${domain}`,
+    // Brand icons - great for popular sites
+    `https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/${cleanDomain}.svg`,
+    // Simple Icons (SVG icons for popular brands)
+    `https://cdn.simpleicons.org/${cleanDomain}`,
+    // Direct favicon attempt
+    `https://${domain}/favicon.ico`,
+    // Google's high-quality fallback
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+    // Google's standard fallback
+    `https://www.google.com/s2/favicons?domain=${domain}`
+  ];
+}
+
+function setupIconWithFallbacks(imgElement, url, altText = 'icon') {
+  const icons = getHighQualityIcon(url);
+  let currentIconIndex = 0;
+
+  imgElement.alt = altText;
+  imgElement.onerror = function() {
+    currentIconIndex++;
+    if (currentIconIndex < icons.length) {
+      this.src = icons[currentIconIndex];
+    }
+  };
+  imgElement.src = icons[currentIconIndex];
+}
+
 function formatProviderName(domain) {
   return domain
     .split('.')[0]
@@ -112,7 +148,7 @@ function formatProviderName(domain) {
 }
 
 function getFaviconUrl(domain) {
-  return `https://www.google.com/s2/favicons?domain=${domain}`;
+  return getHighQualityIcon(`https://${domain}`)[0];
 }
 
 function normalizeSearchUrl(url) {
@@ -262,26 +298,117 @@ function initializeSearchProvider() {
 }
 
 // Apps
-const apps = [
-  { name: 'Gmail', url: 'https://mail.google.com' },
-  { name: 'YouTube', url: 'https://youtube.com' }
-];
+function getApps() {
+  const defaultApps = [
+    { name: 'Gmail', url: 'https://mail.google.com' },
+    { name: 'YouTube', url: 'https://youtube.com' }
+  ];
+  const saved = localStorage.getItem('apps');
+  return saved ? JSON.parse(saved) : defaultApps;
+}
+
+function saveApps(apps) {
+  localStorage.setItem('apps', JSON.stringify(apps));
+}
+
+function initializeAppsManager() {
+  const appsList = document.getElementById('apps-list-settings');
+  const addButton = document.getElementById('add-app');
+  const urlInput = document.getElementById('app-url');
+  const nameInput = document.getElementById('app-name');
+  const iconInput = document.getElementById('app-icon');
+  let apps = getApps();
+
+  // Add URL input handler for auto-fill
+  urlInput.addEventListener('blur', () => {
+    const url = urlInput.value.trim();
+    const domain = getDomainFromUrl(url);
+    
+    if (domain && !nameInput.value.trim()) {
+      nameInput.value = formatProviderName(domain);
+    }
+    
+    if (domain && !iconInput.value.trim()) {
+      iconInput.value = getFaviconUrl(domain);
+    }
+  });
+
+  function updateAppsList() {
+    appsList.innerHTML = '';
+    apps.forEach((app, index) => {
+      const item = document.createElement('div');
+      item.className = 'provider-item';
+      
+      const icon = document.createElement('img');
+      setupIconWithFallbacks(icon, app.url, app.name);
+      
+      const name = document.createElement('span');
+      name.className = 'provider-name';
+      name.textContent = app.name;
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-provider';
+      removeBtn.textContent = '×';
+      removeBtn.onclick = () => {
+        apps = apps.filter((_, i) => i !== index);
+        saveApps(apps);
+        updateAppsList();
+        loadApps();
+      };
+      
+      item.appendChild(icon);
+      item.appendChild(name);
+      item.appendChild(removeBtn);
+      appsList.appendChild(item);
+    });
+  }
+  
+  addButton.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    const icon = iconInput.value.trim();
+    
+    if (url) {
+      const domain = getDomainFromUrl(url);
+      apps.push({ 
+        name: name || formatProviderName(domain),
+        url: url,
+        icon: icon || getFaviconUrl(domain)
+      });
+      saveApps(apps);
+      updateAppsList();
+      loadApps();
+      
+      // Clear inputs
+      nameInput.value = '';
+      urlInput.value = '';
+      iconInput.value = '';
+    }
+  });
+  
+  updateAppsList();
+}
+
 function loadApps() {
   const appsList = document.getElementById('apps-list');
+  const apps = getApps();
   appsList.innerHTML = '';
   apps.forEach(app => {
     const button = document.createElement('a');
     button.href = app.url;
     button.className = 'app-btn';
     
-    const favicon = document.createElement('img');
-    favicon.src = `https://www.google.com/s2/favicons?domain=${app.url}`;
-    favicon.alt = `${app.name} favicon`;
+    const icon = document.createElement('img');
+    if (app.icon) {
+      setupIconWithFallbacks(icon, app.url, `${app.name} icon`, [app.icon]);
+    } else {
+      setupIconWithFallbacks(icon, app.url, `${app.name} icon`);
+    }
     
     const name = document.createElement('span');
     name.textContent = app.name;
     
-    button.appendChild(favicon);
+    button.appendChild(icon);
     button.appendChild(name);
     appsList.appendChild(button);
   });
@@ -292,18 +419,26 @@ function loadFavorites() {
   const bookmarksCount = parseInt(localStorage.getItem('bookmarksCount'));
   const bookmarksList = document.getElementById('bookmarks-list');
   const bookmarksSection = document.querySelector('.bookmarks');
+  const isVisible = localStorage.getItem('bookmarks-visible') !== 'false';
   
-  // Clear existing content and exit if needed
+  // Clear existing content
   bookmarksList.innerHTML = '';
   
+  // Keep section hidden if toggle is off, regardless of count
+  if (!isVisible) {
+    bookmarksSection.style.display = 'none';
+    return;
+  }
+  
+  // Handle count = 0 case
   if (bookmarksCount === 0) {
     bookmarksSection.style.display = 'none';
     return;
   }
   
-  bookmarksSection.style.display = 'block';
+  bookmarksSection.style.display = '';
   const maxResults = bookmarksCount || 8;
-
+  
   if (chrome?.bookmarks?.getRecent) {
     chrome.bookmarks.getRecent(maxResults, (recentBookmarks) => {
       const bookmarksToShow = recentBookmarks.slice(0, maxResults);
@@ -329,11 +464,10 @@ function addBookmarkElement(bookmark, container) {
   const isInternalUrl = /^(chrome|brave|edge|firefox):/.test(bookmark.url);
   if (isInternalUrl) {
     // Use a generic icon for internal browser pages
-    favicon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIj48L2NpcmNsZT48bGluZSB4MT0iMiIgeTE9IjEyIiB4Mj0iMjIiIHkyPSIxMiI+PC9saW5lPjxwYXRoIGQ9Ik0xMiAyYTE1LjMgMTUuMyAwIDAgMSA0IDEwIDE1LjMgMTUuMyAwIDAgMS00IDEwIDE1LjMgMTUuMyAwIDAgMSA0LTEweiI+PC9wYXRoPjwvc3ZnPg==';
+    favicon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9lLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiPjwvY2lyY2xlPjxsaW5lIHgxPSIyIiB5MT0iMTIiIHgyPSIyMiIgeTI9IjEyIj48L2xpbmU+PHBhdGggZD0iTTEyIDJhMTUuMyAxNS4zIDAgMCAxIDQgMTAgMTUuMyAxNS4zIDAgMCAxLTQtMTAgMTUuMyAxNS4zIDAgMCAxIDQtMTB6Ij48L3BhdGg+PC9zdmc+';
   } else {
-    favicon.src = `https://www.google.com/s2/favicons?domain=${bookmark.url}`;
+    setupIconWithFallbacks(favicon, bookmark.url, `${bookmark.title} icon`);
   }
-  favicon.alt = `${bookmark.title} favicon`;
   
   const name = document.createElement('span');
   name.textContent = bookmark.title;
@@ -359,9 +493,13 @@ function loadHistory() {
   const historyCount = parseInt(localStorage.getItem('historyCount'));
   const historySection = document.querySelector('.history');
   const historyList = document.getElementById('history-list');
+  const isVisible = localStorage.getItem('history-visible') !== 'false';
   
-  // Clear any existing display style
-  historySection.style.removeProperty('display');
+  // Keep section hidden if toggle is off, regardless of count
+  if (!isVisible) {
+    historySection.style.display = 'none';
+    return;
+  }
   
   // Hide section and return if count is explicitly 0
   if (historyCount === 0) {
@@ -369,7 +507,7 @@ function loadHistory() {
     return;
   }
   
-  // Use a default of 16 if no count is set
+  historySection.style.display = '';
   const maxResults = historyCount || 16;
   
   // Check if Chrome API is available
@@ -383,8 +521,7 @@ function loadHistory() {
           button.className = 'history-btn';
           
           const favicon = document.createElement('img');
-          favicon.src = `https://www.google.com/s2/favicons?domain=${item.url}`;
-          favicon.alt = 'favicon';
+          setupIconWithFallbacks(favicon, item.url);
           
           const name = document.createElement('span');
           name.textContent = item.title || item.url.split('/')[2] || item.url;
@@ -558,22 +695,11 @@ function initializeWeatherToggle() {
   const displaySelect = document.getElementById('weather');
   const textView = document.getElementById('weather-info');
   const iconView = document.getElementById('weather-icon-view');
-  const weatherSection = document.querySelector('.weather');
   
   let displayMode = localStorage.getItem('weatherDisplayMode') || 'text';
   displaySelect.value = displayMode;
   
   function updateWeatherView() {
-    // Hide entire section if hidden is selected
-    if (displayMode === 'hidden') {
-      weatherSection.style.display = 'none';
-      return;
-    }
-    
-    // Show section if it was hidden
-    weatherSection.style.display = 'block';
-    
-    // Toggle between text and icon view
     const showIcon = displayMode === 'icon';
     textView.classList.toggle('hidden', showIcon);
     iconView.classList.toggle('hidden', !showIcon);
@@ -623,6 +749,185 @@ function initializeHeaderVisibility() {
   });
 }
 
+// Add function to manage section toggles
+function initializeSectionToggles() {
+  const sections = {
+    'weather': {
+      section: document.querySelector('.weather'),
+      toggle: document.getElementById('weather-toggle'),
+      key: 'weather-visible',
+      onHide: () => {
+        document.getElementById('weather').value = 'hidden';
+      },
+      onShow: () => {
+        const select = document.getElementById('weather');
+        if (select.value === 'hidden') {
+          select.value = 'text';
+        }
+      }
+    },
+    'bookmarks': {
+      section: document.querySelector('.bookmarks'),
+      toggle: document.getElementById('bookmarks-toggle'),
+      key: 'bookmarks-visible',
+      countSelect: document.getElementById('bookmarks-count'),
+      onHide: () => loadFavorites(),
+      onShow: () => loadFavorites()
+    },
+    'search': {
+      section: document.getElementById('search-container'),
+      toggle: document.getElementById('search-toggle'),
+      key: 'search-visible'
+    },
+    'apps': {
+      section: document.querySelector('.apps'),
+      toggle: document.getElementById('apps-toggle'),
+      key: 'apps-visible'
+    },
+    'history': {
+      section: document.querySelector('.history'),
+      toggle: document.getElementById('history-toggle'),
+      key: 'history-visible',
+      countSelect: document.getElementById('history-count'),
+      onHide: () => loadHistory(),
+      onShow: () => loadHistory()
+    }
+  };
+
+  // Initialize each section
+  Object.entries(sections).forEach(([name, config]) => {
+    if (!config.toggle || !config.section) return;
+
+    // Load saved state
+    const isVisible = localStorage.getItem(config.key) !== 'false';
+    config.toggle.checked = isVisible;
+    
+    // Set initial visibility
+    config.section.style.display = isVisible ? '' : 'none';
+    config.section.classList.toggle('section-hidden', !isVisible);
+    
+    // Add toggle listener
+    config.toggle.addEventListener('change', (e) => {
+      const isVisible = e.target.checked;
+      config.section.style.display = isVisible ? '' : 'none';
+      config.section.classList.toggle('section-hidden', !isVisible);
+      localStorage.setItem(config.key, isVisible);
+      
+      // Call visibility callbacks if defined
+      if (!isVisible && config.onHide) {
+        config.onHide();
+      } else if (isVisible && config.onShow) {
+        config.onShow();
+      }
+      
+      // Update order after visibility change
+      normalizeOrders();
+    });
+  });
+}
+
+// Add function to manage section order
+function initializeSectionOrder() {
+  const sections = {
+    'weather': document.querySelector('.weather'),
+    'bookmarks': document.querySelector('.bookmarks'),
+    'search': document.getElementById('search-container'),
+    'apps': document.querySelector('.apps'),
+    'history': document.querySelector('.history')
+  };
+  
+  const orderInputs = {
+    'weather': document.getElementById('weather-order'),
+    'bookmarks': document.getElementById('bookmarks-order'),
+    'search': document.getElementById('search-order'),
+    'apps': document.getElementById('apps-order'),
+    'history': document.getElementById('history-order')
+  };
+
+  function updateInputsToMatchOrder() {
+    // Get all visible sections and their current order values
+    const visibleSections = Object.entries(sections)
+      .filter(([_, section]) => !section.classList.contains('section-hidden'))
+      .map(([key, section]) => ({
+        key,
+        order: parseInt(section.style.order || 1)
+      }))
+      .sort((a, b) => a.order - b.order);
+
+    // Update input values to match actual position
+    visibleSections.forEach((section, index) => {
+      const newOrder = index + 1;
+      orderInputs[section.key].value = newOrder;
+      sections[section.key].style.order = newOrder;
+      localStorage.setItem(`${section.key}-order`, newOrder);
+    });
+  }
+
+  // Helper to find section by order
+  function getSectionAtOrder(targetOrder) {
+    return Object.entries(sections).find(([key, section]) => {
+      if (section.classList.contains('section-hidden')) return false;
+      return parseInt(section.style.order || 1) === targetOrder;
+    })?.[0];
+  }
+
+  // Handle order changes
+  function handleOrderChange(key, newOrder) {
+    const section = sections[key];
+    if (section.classList.contains('section-hidden')) return;
+
+    const currentOrder = parseInt(section.style.order || 1);
+    const swapKey = getSectionAtOrder(newOrder);
+
+    if (swapKey && swapKey !== key) {
+      // Swap orders
+      sections[swapKey].style.order = currentOrder;
+      section.style.order = newOrder;
+    } else {
+      section.style.order = newOrder;
+    }
+
+    // Update all input values to match new order
+    updateInputsToMatchOrder();
+  }
+
+  // Load saved orders
+  Object.keys(sections).forEach(key => {
+    const savedOrder = localStorage.getItem(`${key}-order`);
+    if (savedOrder) {
+      sections[key].style.order = savedOrder;
+    }
+  });
+
+  // Initialize order numbers
+  updateInputsToMatchOrder();
+
+  // Add change listeners
+  Object.keys(orderInputs).forEach(key => {
+    orderInputs[key].addEventListener('change', (e) => {
+      const newOrder = parseInt(e.target.value);
+      if (newOrder > 0 && newOrder <= Object.keys(sections).length) {
+        handleOrderChange(key, newOrder);
+      } else {
+        // Reset to current actual position if invalid number
+        updateInputsToMatchOrder();
+      }
+    });
+  });
+
+  // Listen for section visibility changes
+  const observer = new MutationObserver((mutations) => {
+    if (mutations.some(m => m.attributeName === 'class')) {
+      updateInputsToMatchOrder();
+    }
+  });
+
+  // Start observing each section
+  Object.values(sections).forEach(section => {
+    observer.observe(section, { attributes: true });
+  });
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeTheme();
@@ -636,6 +941,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeSearchProviderManager();
   initializeBookmarksCount(); // This will call loadFavorites
   initializeHeaderVisibility();
+  initializeAppsManager();
+  initializeSectionToggles();
+  initializeSectionOrder();
 });
 
 function initializeBookmarksCount() {

@@ -51,58 +51,73 @@
       <div class="settings-tabs">
         <div class="bg-options">
           <div class="bg-section">
-            <h4>Theme</h4>
+            <h4>Theme & Style</h4>
             <select id="theme-select" class="theme-select">
-              <option value="auto">Auto</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
+              <option value="auto">Auto Theme</option>
+              <option value="light">Light Theme</option>
+              <option value="dark">Dark Theme</option>
             </select>
-          </div>
-          <div class="bg-section">
-            <h4>Weather</h4>
-            <select id="weather" class="theme-select">
-              <option value="text">Text View</option>
-              <option value="icon">Icon View</option>
-              <option value="hidden">Hidden</option>
+            <select id="button-style" class="theme-select">
+              <option value="squircle">Squircle Buttons</option>
+              <option value="square">Square Buttons</option>
+              <option value="nobox">No Box</option>
             </select>
-          </div>
-          <div class="bg-section">
-            <h4>Bookmarks</h4>
-            <select id="bookmarks-count" class="theme-select">
-              <option value="0">0 items - Hide Bookmarks</option>
-              <option value="8">8 items</option>
-              <option value="16">16 items</option>
-              <option value="24">24 items</option>
-              <option value="32">32 items</option>
-            </select>
-          </div>
-          <div class="bg-section">
-            <h4>History Items</h4>
-            <select id="history-count" class="theme-select">
-              <option value="0">0 items - Hide History</option>
-              <option value="8">8 items</option>
-              <option value="16">16 items</option>
-              <option value="24">24 items</option>
-              <option value="32">32 items</option>
-            </select>
-          </div>
-          <div class="bg-section">
-            <h4>Headers</h4>
             <select id="headers-visibility" class="theme-select">
               <option value="show">Show Headers</option>
               <option value="hide">Hide Headers</option>
             </select>
           </div>
           <div class="bg-section">
-            <h4>Button Style</h4>
-            <select id="button-style" class="theme-select">
-              <option value="squircle">Squircle Buttons</option>
-              <option value="square">Square Buttons</option>
-              <option value="nobox">No Box</option>
+            <div class="section-header">
+              <h4>Weather</h4>
+              <div class="section-controls">
+                <label title="Section Order">
+                  <input type="number" class="order-input" id="weather-order" min="1" max="6" value="1">
+                </label>
+                <label class="toggle-switch" title="Show/Hide Weather">
+                  <input type="checkbox" id="weather-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <select id="weather" class="theme-select">
+              <option value="text">Text View</option>
+              <option value="icon">Icon View</option>
             </select>
           </div>
           <div class="bg-section">
-            <h4>Search Providers</h4>
+            <div class="section-header">
+              <h4>Bookmarks</h4>
+              <div class="section-controls">
+                <label title="Section Order">
+                  <input type="number" class="order-input" id="bookmarks-order" min="1" max="6" value="2">
+                </label>
+                <label class="toggle-switch" title="Show/Hide Bookmarks">
+                  <input type="checkbox" id="bookmarks-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <select id="bookmarks-count" class="theme-select">
+              <option value="8">8 items</option>
+              <option value="16">16 items</option>
+              <option value="24">24 items</option>
+              <option value="32">32 items</option>
+            </select>
+          </div>
+          <div class="bg-section">
+            <div class="section-header">
+              <h4>Search Providers</h4>
+              <div class="section-controls">
+                <label title="Section Order">
+                  <input type="number" class="order-input" id="search-order" min="1" max="6" value="3">
+                </label>
+                <label class="toggle-switch" title="Show/Hide Search Bar">
+                  <input type="checkbox" id="search-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
             <div class="search-providers-list" id="search-providers-list">
               <!-- Providers will be inserted here -->
             </div>
@@ -112,6 +127,49 @@
               <input type="text" id="provider-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
               <button id="add-provider" class="theme-select">Add Provider</button>
             </div>
+          </div>
+          <div class="bg-section">
+            <div class="section-header">
+              <h4>Apps</h4>
+              <div class="section-controls">
+                <label title="Section Order">
+                  <input type="number" class="order-input" id="apps-order" min="1" max="6" value="4">
+                </label>
+                <label class="toggle-switch" title="Show/Hide Apps">
+                  <input type="checkbox" id="apps-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="apps-list" id="apps-list-settings">
+              <!-- Apps will be inserted here -->
+            </div>
+            <div class="add-app-form">
+              <input type="text" id="app-url" placeholder="App URL (e.g., https://example.com)" class="theme-select">
+              <input type="text" id="app-name" placeholder="App Name (auto-generated if empty)" class="theme-select">
+              <input type="text" id="app-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
+              <button id="add-app" class="theme-select">Add App</button>
+            </div>
+          </div>
+          <div class="bg-section">
+            <div class="section-header">
+              <h4>History</h4>
+              <div class="section-controls">
+                <label title="Section Order">
+                  <input type="number" class="order-input" id="history-order" min="1" max="6" value="5">
+                </label>
+                <label class="toggle-switch" title="Show/Hide History">
+                  <input type="checkbox" id="history-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <select id="history-count" class="theme-select">
+              <option value="8">8 items</option>
+              <option value="16">16 items</option>
+              <option value="24">24 items</option>
+              <option value="32">32 items</option>
+            </select>
           </div>
           <div class="bg-section">
             <h4>Background Image</h4>
@@ -128,8 +186,13 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="apply">Apply</button>
-        <button id="close-modal">Close</button>
+        <span class="copyright">
+          <a href="https://github.com/Chaython/NTP" target="_blank">©2025 Chaython Meredith</a>
+        </span>
+        <div class="modal-actions">
+          <button id="apply">Apply</button>
+          <button id="close-modal">Close</button>
+        </div>
       </div>
     </div>
   </div>

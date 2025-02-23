@@ -77,6 +77,23 @@ html.nobox-buttons .history-btn {
   padding: 18px 12px 12px;
 }
 
+html.nobox-buttons #search-bar {
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-bottom: 1px solid var(--button-border);
+  border-radius: 0;
+  padding-left: 0;
+}
+
+html.nobox-buttons #search-bar:focus {
+  border-bottom: 2px solid var(--text-color);
+}
+
+html.nobox-buttons #search-provider {
+  border-radius: 0;
+}
+
 html.nobox-buttons .app-btn img,
 html.nobox-buttons .history-btn img {
   width: clamp(32px, 35%, 42px);
@@ -318,6 +335,10 @@ body {
   margin-top: 10px;
 }
 
+.theme-select:first-of-type {
+  margin-top: 0;
+}
+
 .settings-footer {
   display: none;
 }
@@ -400,6 +421,7 @@ html.dark .modal-content {
   border: 1px solid var(--button-border);
   display: flex;
   flex-direction: column;
+  min-height: 200px; /* Set minimum height to match apps box */
 }
 
 html.dark .bg-section {
@@ -523,9 +545,15 @@ html.dark .bg-section {
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
   margin-top: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .modal-footer button {
@@ -641,4 +669,124 @@ html.dark .bg-section {
 h2, h3, h4 {
   font-size: clamp(16px, 2vw, 24px);
   margin: 1vh 0;
+}
+
+/* Section Controls */
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;  /* Push controls to the right */
+}
+
+.section-controls .theme-select {
+  margin-top: 0;
+}
+
+.order-input {
+  width: 50px;
+  padding: 4px;
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  background: var(--button-bg);
+  color: var(--text-color);
+  text-align: center;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+  border-bottom: none;  /* Remove the border */
+  padding-bottom: 0;  /* Remove the padding */
+}
+
+.section-header h4 {
+  margin: 0;
+  flex-shrink: 0;  /* Prevent header from shrinking */
+}
+
+/* Override the theme-select margin in sections */
+.bg-section .theme-select {
+  margin-top: 0;
+}
+
+/* Update the spacing for sections with additional content */
+.bg-section > *:not(:first-child) {
+  margin-top: 10px;
+}
+
+/* Make form inputs consistent with the theme */
+.bg-section input[type="text"],
+.bg-section input[type="number"],
+.bg-section select {
+  background: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--button-border);
+}
+
+/* Toggle switch styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  margin-left: 10px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #4CAF50;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.copyright {
+  color: var(--text-color);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.copyright a {
+  color: var(--text-color);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.copyright a:hover {
+  text-decoration: underline;
+  opacity: 1;
 }
