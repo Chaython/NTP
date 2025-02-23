@@ -354,6 +354,7 @@ function loadHistory() {
 function initializeHistoryCount() {
   const countSelect = document.getElementById('history-count');
   const storedCount = localStorage.getItem('historyCount');
+  // Changed this line to properly handle zero value
   let historyCount = storedCount !== null ? parseInt(storedCount) : 16;
   
   // Set initial value
@@ -532,19 +533,6 @@ function initializeWeatherToggle() {
   });
   
   updateWeatherView();
-}
-
-// History Management
-function initializeHistoryCount() {
-  const countSelect = document.getElementById('history-count');
-  let historyCount = parseInt(localStorage.getItem('historyCount')) || 16;
-  countSelect.value = historyCount.toString();
-  
-  countSelect.addEventListener('change', () => {
-    historyCount = parseInt(countSelect.value);
-    localStorage.setItem('historyCount', historyCount);
-    loadHistory(); // Reload history with new count
-  });
 }
 
 // Initialize
