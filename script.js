@@ -1,10 +1,25 @@
+// Constants
+const CONFIG = {
+  WEATHER: {
+    API_KEY: '1794b88c0a05da01813be549e6707c28',
+    CACHE_TIME: 30 * 60 * 1000, // 30 minutes
+    DEFAULT_MODE: 'text'
+  },
+  DEFAULTS: {
+    THEME: 'auto',
+    BUTTON_STYLE: 'squircle',
+    BOOKMARKS_COUNT: 8,
+    HISTORY_COUNT: 16
+  }
+};
+
 // Weather cache functions
 function getWeatherCache() {
   const cache = localStorage.getItem('weatherCache');
   if (!cache) return null;
   
   const { data, timestamp } = JSON.parse(cache);
-  const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+  const thirtyMinutes = CONFIG.WEATHER.CACHE_TIME;
   
   if (Date.now() - timestamp > thirtyMinutes) {
     localStorage.removeItem('weatherCache');
@@ -52,7 +67,7 @@ async function getWeather() {
   navigator.geolocation.getCurrentPosition(async (position) => {
     try {
       const { latitude, longitude } = position.coords;
-      const apiKey = '1794b88c0a05da01813be549e6707c28';
+      const apiKey = CONFIG.WEATHER.API_KEY;
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`;
       
       const response = await fetch(url);
@@ -80,6 +95,7 @@ const defaultSearchProviders = [
   { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=%s', icon: 'https://duckduckgo.com/favicon.ico' }
 ];
 
+// Generic helper functions
 function getSearchProviders() {
   const saved = localStorage.getItem('searchProviders');
   const providers = saved ? JSON.parse(saved) : defaultSearchProviders;
@@ -437,7 +453,7 @@ function loadFavorites() {
   }
   
   bookmarksSection.style.display = '';
-  const maxResults = bookmarksCount || 8;
+  const maxResults = bookmarksCount || CONFIG.DEFAULTS.BOOKMARKS_COUNT;
   
   if (chrome?.bookmarks?.getRecent) {
     chrome.bookmarks.getRecent(maxResults, (recentBookmarks) => {
@@ -508,7 +524,7 @@ function loadHistory() {
   }
   
   historySection.style.display = '';
-  const maxResults = historyCount || 16;
+  const maxResults = historyCount || CONFIG.DEFAULTS.HISTORY_COUNT;
   
   // Check if Chrome API is available
   if (typeof chrome !== 'undefined' && chrome.history) {
@@ -542,7 +558,7 @@ function initializeHistoryCount() {
   const countSelect = document.getElementById('history-count');
   const storedCount = localStorage.getItem('historyCount');
   // Changed this line to properly handle zero value
-  let historyCount = storedCount !== null ? parseInt(storedCount) : 16;
+  let historyCount = storedCount !== null ? parseInt(storedCount) : CONFIG.DEFAULTS.HISTORY_COUNT;
   
   // Set initial value
   countSelect.value = historyCount.toString();
@@ -563,7 +579,7 @@ function applyTheme(theme) {
 }
 
 function initializeTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'auto';
+  const savedTheme = localStorage.getItem('theme') || CONFIG.DEFAULTS.THEME;
   const themeSelect = document.getElementById('theme-select');
   
   if (!themeSelect) {
@@ -584,7 +600,7 @@ function initializeTheme() {
 
   // Listen for system theme changes in auto mode
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    const currentTheme = localStorage.getItem('theme') || 'auto';
+    const currentTheme = localStorage.getItem('theme') || CONFIG.DEFAULTS.THEME;
     if (currentTheme === 'auto') {
       applyTheme('auto');
       console.log('System theme changed, auto mode updated:', e.matches ? 'dark' : 'light');
@@ -596,32 +612,36 @@ function initializeTheme() {
 function initializeBackgroundImage() {
   const modal = document.getElementById('bg-modal');
   const preview = document.getElementById('bg-preview');
-  let currentPreview = localStorage.getItem('backgroundImage');
+  let currentPreview = null;
+  let savedBackground = localStorage.getItem('backgroundImage');
   
   function setBackgroundImage(url, save = true) {
-    document.body.style.backgroundImage = `url(${url})`;
-    document.body.classList.add('has-bg');
+    document.body.style.backgroundImage = url ? `url(${url})` : '';
+    document.body.classList.toggle('has-bg', !!url);
     if (save) {
-      localStorage.setItem('backgroundImage', url);
+      if (url) {
+        localStorage.setItem('backgroundImage', url);
+      } else {
+        localStorage.removeItem('backgroundImage');
+      }
+      savedBackground = url;
     }
   }
 
   function updatePreview(url) {
-    preview.style.backgroundImage = `url(${url})`;
+    preview.style.backgroundImage = url ? `url(${url})` : '';
     currentPreview = url;
   }
 
-  // Remove presetBackgrounds array and initialization code
-  
-  // Modal controls
+  // Settings button click - store current background
   document.getElementById('settings-btn').addEventListener('click', () => {
     modal.style.display = 'block';
-    if (currentPreview) {
-      updatePreview(currentPreview);
-    }
+    updatePreview(savedBackground);
   });
 
-  document.getElementById('close-modal').addEventListener('click', () => {
+  // Cancel button handler
+  document.getElementById('cancel-bg').addEventListener('click', () => {
+    updatePreview(savedBackground);
     modal.style.display = 'none';
   });
 
@@ -683,10 +703,15 @@ function initializeBackgroundImage() {
     modal.style.display = 'none';
   });
 
+  // Close button handler
+  document.getElementById('close-modal').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
   // Load saved background
-  const savedBg = localStorage.getItem('backgroundImage');
-  if (savedBg) {
-    setBackgroundImage(savedBg, false);
+  if (savedBackground) {
+    setBackgroundImage(savedBackground, false);
+    updatePreview(savedBackground);
   }
 }
 
@@ -696,7 +721,7 @@ function initializeWeatherToggle() {
   const textView = document.getElementById('weather-info');
   const iconView = document.getElementById('weather-icon-view');
   
-  let displayMode = localStorage.getItem('weatherDisplayMode') || 'text';
+  let displayMode = localStorage.getItem('weatherDisplayMode') || CONFIG.WEATHER.DEFAULT_MODE;
   displaySelect.value = displayMode;
   
   function updateWeatherView() {
@@ -798,6 +823,8 @@ function initializeSectionToggles() {
   Object.entries(sections).forEach(([name, config]) => {
     if (!config.toggle || !config.section) return;
 
+    const panelElement = document.querySelector(`.bg-section[data-order="${config.toggle.closest('.bg-section').getAttribute('data-order')}"]`);
+    
     // Load saved state
     const isVisible = localStorage.getItem(config.key) !== 'false';
     config.toggle.checked = isVisible;
@@ -805,13 +832,26 @@ function initializeSectionToggles() {
     // Set initial visibility
     config.section.style.display = isVisible ? '' : 'none';
     config.section.classList.toggle('section-hidden', !isVisible);
+    if (panelElement) {
+      panelElement.classList.toggle('section-hidden', !isVisible);
+    }
     
     // Add toggle listener
     config.toggle.addEventListener('change', (e) => {
       const isVisible = e.target.checked;
       config.section.style.display = isVisible ? '' : 'none';
       config.section.classList.toggle('section-hidden', !isVisible);
+      if (panelElement) {
+        panelElement.classList.toggle('section-hidden', !isVisible);
+      }
       localStorage.setItem(config.key, isVisible);
+      
+      if (isVisible) {
+        // When showing, assign the next available order number
+        const visibleCount = Object.values(sections)
+          .filter(section => !section.classList.contains('section-hidden')).length;
+        sections[name].style.order = visibleCount;
+      }
       
       // Call visibility callbacks if defined
       if (!isVisible && config.onHide) {
@@ -821,7 +861,7 @@ function initializeSectionToggles() {
       }
       
       // Update order after visibility change
-      normalizeOrders();
+      updateInputsToMatchOrder();
     });
   });
 }
@@ -845,7 +885,7 @@ function initializeSectionOrder() {
   };
 
   function updateInputsToMatchOrder() {
-    // Get all visible sections and their current order values
+    // Get all visible sections and sort by current order
     const visibleSections = Object.entries(sections)
       .filter(([_, section]) => !section.classList.contains('section-hidden'))
       .map(([key, section]) => ({
@@ -854,11 +894,27 @@ function initializeSectionOrder() {
       }))
       .sort((a, b) => a.order - b.order);
 
-    // Update input values to match actual position
+    // Store current orders before reassignment
+    const previousOrders = {};
+    visibleSections.forEach(section => {
+      previousOrders[section.key] = parseInt(sections[section.key].style.order || 1);
+    });
+
+    // Assign consecutive numbers starting from 1
     visibleSections.forEach((section, index) => {
       const newOrder = index + 1;
-      orderInputs[section.key].value = newOrder;
       sections[section.key].style.order = newOrder;
+      orderInputs[section.key].value = newOrder;
+      document.documentElement.style.setProperty(`--${section.key}-order`, newOrder);
+      
+      // Update panel data-order if order changed
+      if (previousOrders[section.key] !== newOrder) {
+        const panel = document.querySelector(`.right-panels .bg-section[data-order="${previousOrders[section.key]}"]`);
+        if (panel) {
+          panel.setAttribute('data-order', newOrder);
+        }
+      }
+      
       localStorage.setItem(`${section.key}-order`, newOrder);
     });
   }
@@ -871,22 +927,38 @@ function initializeSectionOrder() {
     })?.[0];
   }
 
-  // Handle order changes
   function handleOrderChange(key, newOrder) {
     const section = sections[key];
     if (section.classList.contains('section-hidden')) return;
-
+  
     const currentOrder = parseInt(section.style.order || 1);
     const swapKey = getSectionAtOrder(newOrder);
-
+  
+    // Update main section order
     if (swapKey && swapKey !== key) {
-      // Swap orders
       sections[swapKey].style.order = currentOrder;
+      document.documentElement.style.setProperty(`--${swapKey}-order`, currentOrder);
       section.style.order = newOrder;
+      document.documentElement.style.setProperty(`--${key}-order`, newOrder);
+      
+      // Update settings panel order
+      const swapPanel = document.querySelector(`.right-panels .bg-section[data-order="${newOrder}"]`);
+      const currentPanel = document.querySelector(`.right-panels .bg-section[data-order="${currentOrder}"]`);
+      if (swapPanel && currentPanel) {
+        swapPanel.setAttribute('data-order', currentOrder);
+        currentPanel.setAttribute('data-order', newOrder);
+      }
     } else {
       section.style.order = newOrder;
+      document.documentElement.style.setProperty(`--${key}-order`, newOrder);
     }
-
+  
+    // Save the orders
+    localStorage.setItem(`${key}-order`, newOrder);
+    if (swapKey) {
+      localStorage.setItem(`${swapKey}-order`, currentOrder);
+    }
+  
     // Update all input values to match new order
     updateInputsToMatchOrder();
   }
@@ -929,28 +1001,44 @@ function initializeSectionOrder() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  initializeTheme();
-  initializeSearchProvider();
-  getWeather();
-  loadApps();
-  loadHistory();
-  initializeBackgroundImage();
-  initializeWeatherToggle();
-  initializeHistoryCount();
-  initializeSearchProviderManager();
-  initializeBookmarksCount(); // This will call loadFavorites
-  initializeHeaderVisibility();
-  initializeAppsManager();
-  initializeSectionToggles();
-  initializeSectionOrder();
-});
+function initialize() {
+  const features = [
+    { fn: initializeTheme, id: 'theme' },
+    { fn: initializeSearchProvider, id: 'search' },
+    { fn: getWeather, id: 'weather' },
+    { fn: loadApps, id: 'apps' },
+    { fn: loadHistory, id: 'history' },
+    { fn: initializeBackgroundImage, id: 'background' },
+    { fn: initializeWeatherToggle, id: 'weather-toggle' },
+    { fn: initializeHistoryCount, id: 'history-count' },
+    { fn: initializeSearchProviderManager, id: 'search-manager' },
+    { fn: initializeBookmarksCount, id: 'bookmarks' },
+    { fn: initializeHeaderVisibility, id: 'headers' },
+    { fn: initializeAppsManager, id: 'apps-manager' },
+    { fn: initializeSectionToggles, id: 'sections' },
+    { fn: initializeSectionOrder, id: 'order' },
+    { fn: initializeColorPickers, id: 'colors' },
+    { fn: loadSavedOrders, id: 'saved-orders' },
+    { fn: initializeSpacing, id: 'spacing' }
+  ];
+
+  features.forEach(({ fn, id }) => {
+    try {
+      fn();
+      console.log(`Initialized ${id}`);
+    } catch (error) {
+      console.error(`Failed to initialize ${id}:`, error);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initialize);
 
 function initializeBookmarksCount() {
   const countSelect = document.getElementById('bookmarks-count');
   const storedCount = localStorage.getItem('bookmarksCount');
   // Changed to properly handle zero value, similar to history count
-  let bookmarksCount = storedCount !== null ? parseInt(storedCount) : 8;
+  let bookmarksCount = storedCount !== null ? parseInt(storedCount) : CONFIG.DEFAULTS.BOOKMARKS_COUNT;
   
   // Set initial value
   countSelect.value = bookmarksCount.toString();
@@ -974,8 +1062,82 @@ document.getElementById('button-style').addEventListener('change', (e) => {
 });
 
 // Update initialization code
-const buttonStyle = localStorage.getItem('buttonStyle') || 'squircle';
+const buttonStyle = localStorage.getItem('buttonStyle') || CONFIG.DEFAULTS.BUTTON_STYLE;
 document.getElementById('button-style').value = buttonStyle;
 if (buttonStyle !== 'squircle') {
   document.documentElement.classList.add(`${buttonStyle}-buttons`);
+}
+
+// Add color picker functionality
+function initializeColorPickers() {
+  const boxColorPicker = document.getElementById('box-color');
+  const fontColorPicker = document.getElementById('font-color');
+  const resetBoxColor = document.getElementById('reset-box-color');
+  const resetFontColor = document.getElementById('reset-font-color');
+
+  // Load saved colors or use defaults
+  const savedBoxColor = localStorage.getItem('customBoxColor');
+  const savedFontColor = localStorage.getItem('customFontColor');
+
+  if (savedBoxColor) {
+    document.documentElement.style.setProperty('--custom-box-color', savedBoxColor);
+    boxColorPicker.value = savedBoxColor;
+  }
+
+  if (savedFontColor) {
+    document.documentElement.style.setProperty('--custom-font-color', savedFontColor);
+    fontColorPicker.value = savedFontColor;
+  }
+
+  // Box color picker
+  boxColorPicker.addEventListener('input', (e) => {
+    const color = e.target.value;
+    document.documentElement.style.setProperty('--custom-box-color', color);
+    localStorage.setItem('customBoxColor', color);
+  });
+
+  // Font color picker
+  fontColorPicker.addEventListener('input', (e) => {
+    const color = e.target.value;
+    document.documentElement.style.setProperty('--custom-font-color', color);
+    localStorage.setItem('customFontColor', color);
+  });
+
+  // Reset buttons
+  resetBoxColor.addEventListener('click', () => {
+    localStorage.removeItem('customBoxColor');
+    document.documentElement.style.removeProperty('--custom-box-color');
+    boxColorPicker.value = getComputedStyle(document.documentElement).getPropertyValue('--button-bg');
+  });
+
+  resetFontColor.addEventListener('click', () => {
+    localStorage.removeItem('customFontColor');
+    document.documentElement.style.removeProperty('--custom-font-color');
+    fontColorPicker.value = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
+  });
+}
+
+function loadSavedOrders() {
+  Object.keys(sections).forEach(key => {
+    const savedOrder = localStorage.getItem(`${key}-order`);
+    if (savedOrder) {
+      const order = parseInt(savedOrder);
+      sections[key].style.order = order;
+      document.documentElement.style.setProperty(`--${key}-order`, order);
+    }
+  });
+}
+
+function initializeSpacing() {
+  const spacingSelect = document.getElementById('section-spacing');
+  const savedSpacing = localStorage.getItem('section-spacing') || '1vh';
+  
+  spacingSelect.value = savedSpacing;
+  document.documentElement.style.setProperty('--section-spacing', savedSpacing);
+  
+  spacingSelect.addEventListener('change', (e) => {
+    const spacing = e.target.value;
+    document.documentElement.style.setProperty('--section-spacing', spacing);
+    localStorage.setItem('section-spacing', spacing);
+  });
 }

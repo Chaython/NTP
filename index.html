@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weather NTP</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  
   <div class="container">
     <!-- Apps Section -->
     <div class="apps">
@@ -29,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search Bar Section -->
     <div class="search" id="search-container">
       <input type="text" id="search-bar" placeholder="Search the web...">
       <img id="search-provider" alt="Search Provider">
@@ -42,146 +44,180 @@
     </div>
   </div>
 
-  <button id="settings-btn" class="settings-btn">⚙️</button>
-
-  <!-- Background Settings Modal -->
-  <div id="bg-modal" class="modal">
+  <!-- Simplified Settings Button -->
+  <button id="settings-btn" class="settings-btn" aria-label="Settings">⚙️</button>
+<!-- End Main -->
+<!-- Settings Panel -->
+  <dialog id="bg-modal" class="modal">
     <div class="modal-content">
       <h3>Settings</h3>
       <div class="settings-tabs">
         <div class="bg-options">
-          <div class="bg-section">
-            <h4>Theme & Style</h4>
-            <select id="theme-select" class="theme-select">
-              <option value="auto">Auto Theme</option>
-              <option value="light">Light Theme</option>
-              <option value="dark">Dark Theme</option>
-            </select>
-            <select id="button-style" class="theme-select">
-              <option value="squircle">Squircle Buttons</option>
-              <option value="square">Square Buttons</option>
-              <option value="nobox">No Box</option>
-            </select>
-            <select id="headers-visibility" class="theme-select">
-              <option value="show">Show Headers</option>
-              <option value="hide">Hide Headers</option>
-            </select>
-          </div>
-          <div class="bg-section">
-            <div class="section-header">
-              <h4>Weather</h4>
-              <div class="section-controls">
-                <label title="Section Order">
-                  <input type="number" class="order-input" id="weather-order" min="1" max="6" value="1">
+          <!-- Left column with theme and background -->
+          <div class="left-panels">
+            <div class="bg-section">
+              <h4>Theme & Style</h4>
+              <select id="theme-select" class="theme-select">
+                <option value="auto">Auto Theme</option>
+                <option value="light">Light Theme</option>
+                <option value="dark">Dark Theme</option>
+              </select>
+              <select id="button-style" class="theme-select">
+                <option value="squircle">Squircle Boxes</option>
+                <option value="square">Square Boxes</option>
+                <option value="nobox">No Box</option>
+              </select>
+              <select id="headers-visibility" class="theme-select">
+                <option value="show">Show Headers</option>
+                <option value="hide">Hide Headers</option>
+              </select>
+              <select id="section-spacing" class="theme-select">
+                <option value="0">No Spacing</option>
+                <option value="1vh">Compact</option>
+                <option value="2vh">Normal</option>
+                <option value="3vh">Relaxed</option>
+                <option value="4vh">Wide</option>
+              </select>
+              <div class="color-picker-group">
+                <label>
+                  Box Color:
+                  <input type="color" id="box-color" class="color-picker">
                 </label>
-                <label class="toggle-switch" title="Show/Hide Weather">
-                  <input type="checkbox" id="weather-toggle" checked>
-                  <span class="toggle-slider"></span>
+                <button id="reset-box-color" class="reset-color">Reset</button>
+              </div>
+              <div class="color-picker-group">
+                <label>
+                  Font Color:
+                  <input type="color" id="font-color" class="color-picker">
                 </label>
+                <button id="reset-font-color" class="reset-color">Reset</button>
               </div>
             </div>
-            <select id="weather" class="theme-select">
-              <option value="text">Text View</option>
-              <option value="icon">Icon View</option>
-            </select>
+            
+            <div class="bg-section">
+              <h4>Background Image</h4>
+              <label class="dropzone" id="dropzone">
+                Drop image here or click to select
+                <input type="file" id="bg-image" accept="image/*" hidden>
+              </label>
+              <div class="url-input">
+                <input type="text" id="bg-url" placeholder="Or paste image URL">
+              </div>
+              <div class="preview" id="bg-preview"></div>
+              <div class="bg-actions">
+                <button id="cancel-bg">Cancel</button>
+                <button id="apply">Apply Background</button>
+              </div>
+              <button id="remove-bg">Remove Background</button>
+            </div>
           </div>
-          <div class="bg-section">
-            <div class="section-header">
-              <h4>Bookmarks</h4>
-              <div class="section-controls">
-                <label title="Section Order">
-                  <input type="number" class="order-input" id="bookmarks-order" min="1" max="6" value="2">
-                </label>
-                <label class="toggle-switch" title="Show/Hide Bookmarks">
-                  <input type="checkbox" id="bookmarks-toggle" checked>
-                  <span class="toggle-slider"></span>
-                </label>
+
+          <!-- Right column with all other sections -->
+          <div class="right-panels">
+            <div class="bg-section" data-order="1">
+              <div class="section-header">
+                <h4>Weather</h4>
+                <div class="section-controls">
+                  <label title="Section Order">
+                    <input type="number" class="order-input" id="weather-order" min="1" max="6" value="1">
+                  </label>
+                  <label class="toggle-switch" title="Show/Hide Weather">
+                    <input type="checkbox" id="weather-toggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <select id="weather" class="theme-select">
+                <option value="text">Text View</option>
+                <option value="icon">Icon View</option>
+              </select>
+            </div>
+            <div class="bg-section" data-order="2">
+              <div class="section-header">
+                <h4>Bookmarks</h4>
+                <div class="section-controls">
+                  <label title="Section Order">
+                    <input type="number" class="order-input" id="bookmarks-order" min="1" max="6" value="2">
+                  </label>
+                  <label class="toggle-switch" title="Show/Hide Bookmarks">
+                    <input type="checkbox" id="bookmarks-toggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <select id="bookmarks-count" class="theme-select">
+                <option value="8">8 items</option>
+                <option value="16">16 items</option>
+                <option value="24">24 items</option>
+                <option value="32">32 items</option>
+              </select>
+            </div>
+            <div class="bg-section" data-order="3">
+              <div class="section-header">
+                <h4>Search Providers</h4>
+                <div class="section-controls">
+                  <label title="Section Order">
+                    <input type="number" class="order-input" id="search-order" min="1" max="6" value="3">
+                  </label>
+                  <label class="toggle-switch" title="Show/Hide Search Bar">
+                    <input type="checkbox" id="search-toggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="search-providers-list" id="search-providers-list">
+                <!-- Providers will be inserted here -->
+              </div>
+              <div class="add-provider-form">
+                <input type="text" id="provider-url" placeholder="Search URL (e.g., https://example.com/search?q=%s)" class="theme-select">
+                <input type="text" id="provider-name" placeholder="Provider Name (auto-generated if empty)" class="theme-select">
+                <input type="text" id="provider-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
+                <button id="add-provider" class="theme-select">Add Provider</button>
               </div>
             </div>
-            <select id="bookmarks-count" class="theme-select">
-              <option value="8">8 items</option>
-              <option value="16">16 items</option>
-              <option value="24">24 items</option>
-              <option value="32">32 items</option>
-            </select>
-          </div>
-          <div class="bg-section">
-            <div class="section-header">
-              <h4>Search Providers</h4>
-              <div class="section-controls">
-                <label title="Section Order">
-                  <input type="number" class="order-input" id="search-order" min="1" max="6" value="3">
-                </label>
-                <label class="toggle-switch" title="Show/Hide Search Bar">
-                  <input type="checkbox" id="search-toggle" checked>
-                  <span class="toggle-slider"></span>
-                </label>
+            <div class="bg-section" data-order="4">
+              <div class="section-header">
+                <h4>Custom Boxes</h4>
+                <div class="section-controls">
+                  <label title="Section Order">
+                    <input type="number" class="order-input" id="apps-order" min="1" max="6" value="4">
+                  </label>
+                  <label class="toggle-switch" title="Show/Hide Apps">
+                    <input type="checkbox" id="apps-toggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="apps-list" id="apps-list-settings">
+                <!-- Apps will be inserted here -->
+              </div>
+              <div class="add-app-form">
+                <input type="text" id="app-url" placeholder="App URL (e.g., https://example.com)" class="theme-select">
+                <input type="text" id="app-name" placeholder="App Name (auto-generated if empty)" class="theme-select">
+                <input type="text" id="app-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
+                <button id="add-app" class="theme-select">Add Box</button>
               </div>
             </div>
-            <div class="search-providers-list" id="search-providers-list">
-              <!-- Providers will be inserted here -->
-            </div>
-            <div class="add-provider-form">
-              <input type="text" id="provider-url" placeholder="Search URL (e.g., https://example.com/search?q=%s)" class="theme-select">
-              <input type="text" id="provider-name" placeholder="Provider Name (auto-generated if empty)" class="theme-select">
-              <input type="text" id="provider-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
-              <button id="add-provider" class="theme-select">Add Provider</button>
-            </div>
-          </div>
-          <div class="bg-section">
-            <div class="section-header">
-              <h4>Apps</h4>
-              <div class="section-controls">
-                <label title="Section Order">
-                  <input type="number" class="order-input" id="apps-order" min="1" max="6" value="4">
-                </label>
-                <label class="toggle-switch" title="Show/Hide Apps">
-                  <input type="checkbox" id="apps-toggle" checked>
-                  <span class="toggle-slider"></span>
-                </label>
+            <div class="bg-section" data-order="5">
+              <div class="section-header">
+                <h4>History</h4>
+                <div class="section-controls">
+                  <label title="Section Order">
+                    <input type="number" class="order-input" id="history-order" min="1" max="6" value="5">
+                  </label>
+                  <label class="toggle-switch" title="Show/Hide History">
+                    <input type="checkbox" id="history-toggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
+              <select id="history-count" class="theme-select">
+                <option value="8">8 items</option>
+                <option value="16">16 items</option>
+                <option value="24">24 items</option>
+                <option value="32">32 items</option>
+              </select>
             </div>
-            <div class="apps-list" id="apps-list-settings">
-              <!-- Apps will be inserted here -->
-            </div>
-            <div class="add-app-form">
-              <input type="text" id="app-url" placeholder="App URL (e.g., https://example.com)" class="theme-select">
-              <input type="text" id="app-name" placeholder="App Name (auto-generated if empty)" class="theme-select">
-              <input type="text" id="app-icon" placeholder="Icon URL (auto-generated if empty)" class="theme-select">
-              <button id="add-app" class="theme-select">Add App</button>
-            </div>
-          </div>
-          <div class="bg-section">
-            <div class="section-header">
-              <h4>History</h4>
-              <div class="section-controls">
-                <label title="Section Order">
-                  <input type="number" class="order-input" id="history-order" min="1" max="6" value="5">
-                </label>
-                <label class="toggle-switch" title="Show/Hide History">
-                  <input type="checkbox" id="history-toggle" checked>
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-            <select id="history-count" class="theme-select">
-              <option value="8">8 items</option>
-              <option value="16">16 items</option>
-              <option value="24">24 items</option>
-              <option value="32">32 items</option>
-            </select>
-          </div>
-          <div class="bg-section">
-            <h4>Background Image</h4>
-            <label class="dropzone" id="dropzone">
-              Drop image here or click to select
-              <input type="file" id="bg-image" accept="image/*" hidden>
-            </label>
-            <div class="url-input">
-              <input type="text" id="bg-url" placeholder="Or paste image URL">
-            </div>
-            <div class="preview" id="bg-preview"></div>
-            <button id="remove-bg" class="remove-bg">Remove Background</button>
           </div>
         </div>
       </div>
@@ -190,12 +226,12 @@
           <a href="https://github.com/Chaython/NTP" target="_blank">©2025 Chaython Meredith</a>
         </span>
         <div class="modal-actions">
-          <button id="apply">Apply</button>
           <button id="close-modal">Close</button>
         </div>
       </div>
     </div>
-  </div>
+  </dialog>
+<!-- End Settings Panel -->
 
   <script src="script.js"></script>
 </body>
