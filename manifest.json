@@ -2,25 +2,23 @@
   "manifest_version": 3,
   "name": "Custom NTP",
   "version": "1.0",
-  "description": "A custom New Tab Page with weather, search, history, bookmarks and customization.",
+  "description": "A customizable new tab page with weather information",
+  "permissions": [
+    "storage",
+    "bookmarks",
+    "history",
+    "tabs"
+  ],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "permissions": [
-    "geolocation",
-    "history",
-    "bookmarks"
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{}",
-      "strict_min_version": "58.0"
-    }
-  },
-  "host_permissions": [
-    "https://api.openweathermap.org/"
-  ],
   "icons": {
     "128": "icon.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "custom-ntp@chaython.dev",
+      "strict_min_version": "58.0"
+    }
   }
 }

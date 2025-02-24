@@ -13,6 +13,41 @@ const CONFIG = {
   }
 };
 
+// Add these helper functions at the top of the file
+function sanitizeHTML(str) {
+  return str.replace(/[&<>"']/g, (match) => {
+    const escape = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return escape[match];
+  });
+}
+
+function createSafeElement(tag, attributes = {}, textContent = '') {
+  const element = document.createElement(tag);
+  for (const [key, value] of Object.entries(attributes)) {
+    if (key.startsWith('on')) continue; // Skip event handlers
+    element.setAttribute(key, value);
+  }
+  if (textContent) {
+    element.textContent = textContent;
+  }
+  return element;
+}
+
+function renderSafeHTML(container, elements) {
+  container.innerHTML = ''; // Safe because we're just clearing
+  elements.forEach(element => {
+    if (element instanceof HTMLElement) {
+      container.appendChild(element);
+    }
+  });
+}
+
 // Weather cache functions
 function getWeatherCache() {
   const cache = localStorage.getItem('weatherCache');
@@ -46,16 +81,22 @@ async function getWeather() {
   const tempSpan = document.getElementById('weather-temp');
   
   function updateWeatherDisplay(data) {
-    // Text view
-    textView.innerHTML = `
-      ${data.name || "Location"}: ${data.main?.temp ?? "N/A"}°C, 
-      ${data.weather?.[0]?.description || "No data"}
-    `;
+    const textView = document.getElementById('weather-info');
+    const elements = [];
     
-    // Icon view
+    const location = createSafeElement('span', {}, data.name || "Location");
+    const temp = createSafeElement('span', {}, `${data.main?.temp ?? "N/A"}°C`);
+    const desc = createSafeElement('span', {}, data.weather?.[0]?.description || "No data");
+    
+    elements.push(location, createSafeElement('span', {}, ': '), temp, createSafeElement('span', {}, ', '), desc);
+    renderSafeHTML(textView, elements);
+    
+    // Update icon view (already safe as it uses src attribute)
+    const iconImg = document.getElementById('weather-icon');
+    const tempSpan = document.getElementById('weather-temp');
     if (data.weather?.[0]?.icon) {
-      iconImg.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-      tempSpan.textContent = `${Math.round(data.main?.temp ?? 0)}°C`;
+        iconImg.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+        tempSpan.textContent = `${Math.round(data.main?.temp ?? 0)}°C`;
     }
   }
 
@@ -437,8 +478,8 @@ function loadFavorites() {
   const bookmarksSection = document.querySelector('.bookmarks');
   const isVisible = localStorage.getItem('bookmarks-visible') !== 'false';
   
-  // Clear existing content
-  bookmarksList.innerHTML = '';
+  // Clear existing content safely
+  renderSafeHTML(bookmarksList, []);
   
   // Keep section hidden if toggle is off, regardless of count
   if (!isVisible) {
@@ -455,27 +496,57 @@ function loadFavorites() {
   bookmarksSection.style.display = '';
   const maxResults = bookmarksCount || CONFIG.DEFAULTS.BOOKMARKS_COUNT;
   
-  if (chrome?.bookmarks?.getRecent) {
-    chrome.bookmarks.getRecent(maxResults, (recentBookmarks) => {
-      const bookmarksToShow = recentBookmarks.slice(0, maxResults);
-      
-      if (bookmarksToShow.length > 0) {
-        bookmarksToShow.forEach(bookmark => addBookmarkElement(bookmark, bookmarksList));
-      } else {
-        bookmarksList.innerHTML = '<p>No bookmarks found</p>';
-      }
-    });
-  } else {
+  getRecentBookmarks(maxResults).then(recentBookmarks => {
+    const bookmarksToShow = recentBookmarks.slice(0, maxResults);
+    
+    if (bookmarksToShow.length > 0) {
+      const bookmarkElements = bookmarksToShow.map(bookmark => {
+        const button = createSafeElement('a', {
+          href: bookmark.url,
+          class: 'app-btn'
+        });
+        
+        const favicon = createSafeElement('img');
+        // Handle browser-specific URLs
+        const isInternalUrl = /^(chrome|brave|edge|firefox):/.test(bookmark.url);
+        if (isInternalUrl) {
+          // Use a generic icon for internal browser pages
+          favicon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9lLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiPjwvY2lyY2xlPjxsaW5lIHgxPSIyIiB5MT0iMTIiIHgyPSIyMiIgeTI9IjEyIj48L2xpbmU+PHBhdGggZD0iTTEyIDJhMTUuMyAxNS4zIDAgMCAxIDQgMTAgMTUuMyAxNS4zIDAgMCAxLTQtMTAgMTUuMyAxNS4zIDAgMCAxIDQtMTB6Ij48L3BhdGg+PC9zdmc+';
+        } else {
+          setupIconWithFallbacks(favicon, bookmark.url, `${bookmark.title} icon`);
+        }
+        
+        const name = createSafeElement('span', {}, bookmark.title);
+        
+        button.appendChild(favicon);
+        button.appendChild(name);
+        
+        // For internal URLs, prevent default and use createTab
+        if (isInternalUrl) {
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            createTab(bookmark.url);
+          });
+        }
+        
+        return button;
+      });
+      renderSafeHTML(bookmarksList, bookmarkElements);
+    } else {
+      bookmarksList.innerHTML = '<p>No bookmarks found</p>';
+    }
+  }).catch(() => {
     bookmarksList.innerHTML = '<div class="no-bookmarks">Please enable bookmarks permission in extension settings</div>';
-  }
+  });
 }
 
 function addBookmarkElement(bookmark, container) {
-  const button = document.createElement('a');
-  button.href = bookmark.url;
-  button.className = 'app-btn';
+  const button = createSafeElement('a', {
+    href: bookmark.url,
+    class: 'app-btn'
+  });
   
-  const favicon = document.createElement('img');
+  const favicon = createSafeElement('img');
   // Handle browser-specific URLs
   const isInternalUrl = /^(chrome|brave|edge|firefox):/.test(bookmark.url);
   if (isInternalUrl) {
@@ -485,19 +556,16 @@ function addBookmarkElement(bookmark, container) {
     setupIconWithFallbacks(favicon, bookmark.url, `${bookmark.title} icon`);
   }
   
-  const name = document.createElement('span');
-  name.textContent = bookmark.title;
+  const name = createSafeElement('span', {}, bookmark.title);
   
   button.appendChild(favicon);
   button.appendChild(name);
   
-  // For internal URLs, prevent default and use chrome.tabs.create
+  // For internal URLs, prevent default and use createTab
   if (isInternalUrl) {
     button.addEventListener('click', (e) => {
       e.preventDefault();
-      if (chrome?.tabs?.create) {
-        chrome.tabs.create({ url: bookmark.url });
-      }
+      createTab(bookmark.url);
     });
   }
   
@@ -526,32 +594,32 @@ function loadHistory() {
   historySection.style.display = '';
   const maxResults = historyCount || CONFIG.DEFAULTS.HISTORY_COUNT;
   
-  // Check if Chrome API is available
-  if (typeof chrome !== 'undefined' && chrome.history) {
-    chrome.history.search({ text: '', maxResults }, (historyItems) => {
-      historyList.innerHTML = '';
-      historyItems.forEach(item => {
-        if (item.url) {
-          const button = document.createElement('a');
-          button.href = item.url;
-          button.className = 'history-btn';
-          
-          const favicon = document.createElement('img');
-          setupIconWithFallbacks(favicon, item.url);
-          
-          const name = document.createElement('span');
-          name.textContent = item.title || item.url.split('/')[2] || item.url;
-          
-          button.appendChild(favicon);
-          button.appendChild(name);
-          historyList.appendChild(button);
-        }
+  getRecentHistory('', maxResults).then(historyItems => {
+    const historyElements = historyItems.map(item => {
+      if (!item.url) return null;
+      
+      const button = createSafeElement('a', {
+        href: item.url,
+        class: 'history-btn'
       });
-    });
-  } else {
-    // Fallback for when Chrome API isn't available
-    historyList.innerHTML = '<p>History not available</p>';
-  }
+      
+      const favicon = createSafeElement('img');
+      setupIconWithFallbacks(favicon, item.url);
+      
+      const name = createSafeElement('span', {}, 
+        item.title || item.url.split('/')[2] || item.url
+      );
+      
+      button.appendChild(favicon);
+      button.appendChild(name);
+      return button;
+    }).filter(Boolean);
+    
+    renderSafeHTML(historyList, historyElements);
+  }).catch(() => {
+    const errorMessage = createSafeElement('p', {}, 'History not available');
+    renderSafeHTML(historyList, [errorMessage]);
+  });
 }
 
 function initializeHistoryCount() {
@@ -1139,5 +1207,86 @@ function initializeSpacing() {
     const spacing = e.target.value;
     document.documentElement.style.setProperty('--section-spacing', spacing);
     localStorage.setItem('section-spacing', spacing);
+  });
+}
+
+// Safely create and append elements
+function createSafeElement(tag, attributes = {}, textContent = '') {
+  const element = document.createElement(tag);
+  for (const [key, value] of Object.entries(attributes)) {
+    if (key.startsWith('on')) continue; // Skip event handlers
+    element.setAttribute(key, value);
+  }
+  if (textContent) {
+    element.textContent = textContent;
+  }
+  return element;
+}
+
+// Cross-browser bookmarks function
+async function getRecentBookmarks(count = 8) {
+  try {
+    if (chrome.bookmarks && chrome.bookmarks.getRecent) {
+      return await chrome.bookmarks.getRecent(count);
+    } else if (browser && browser.bookmarks && browser.bookmarks.getRecent) {
+      return await browser.bookmarks.getRecent(count);
+    } else {
+      console.warn('Bookmarks API not available');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching bookmarks:', error);
+    return [];
+  }
+}
+
+// Cross-browser history function
+async function getRecentHistory(query = '', maxResults = 8) {
+  try {
+    if (chrome.history && chrome.history.search) {
+      return await chrome.history.search({
+        text: query,
+        maxResults: maxResults,
+        startTime: 0
+      });
+    } else if (browser && browser.history && browser.history.search) {
+      return await browser.history.search({
+        text: query,
+        maxResults: maxResults,
+        startTime: 0
+      });
+    } else {
+      console.warn('History API not available');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching history:', error);
+    return [];
+  }
+}
+
+// Cross-browser tabs function
+async function createTab(url) {
+  try {
+    if (chrome.tabs && chrome.tabs.create) {
+      return await chrome.tabs.create({ url });
+    } else if (browser && browser.tabs && browser.tabs.create) {
+      return await browser.tabs.create({ url });
+    } else {
+      window.open(url, '_blank');
+    }
+  } catch (error) {
+    console.error('Error creating tab:', error);
+    window.open(url, '_blank');
+  }
+}
+
+// Safe HTML rendering function
+function renderSafeHTML(container, elements) {
+  container.innerHTML = ''; // Clear existing content
+  elements.forEach(element => {
+    if (element instanceof HTMLElement) {
+      container.appendChild(element);
+    }
   });
 }
