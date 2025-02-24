@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Weather NTP",
+  "name": "Custom NTP",
   "version": "1.0",
-  "description": "A custom New Tab Page with weather, search, history, apps, and favorites.",
+  "description": "A custom New Tab Page with weather, search, history, bookmarks and customization.",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
@@ -11,6 +11,12 @@
     "history",
     "bookmarks"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{}",
+      "strict_min_version": "58.0"
+    }
+  },
   "host_permissions": [
     "https://api.openweathermap.org/"
   ],
